@@ -1,0 +1,34 @@
+<resources>
+    <string name="app_name">PHILIPPINES HIGH TAMBAYAN CHAT</string>
+    <string name="app_header_title">PHILIPPINES HIGH TAMBAYAN CHAT</string>
+    <string name="app_subtitle_guide">Pumili ng Tambayan Room o mag-chikahan kasama ang buong barkada!</string>
+    <string name="app_subtitle_guide_en">Choose a Tambayan Room or chat with fellow high schoolers nationwide!</string>
+    <string name="app_tagline">Ang Ligtas at Pambansang Tambayan ng Kabataang Pilipino 🇵🇭</string>
+
+    <string name="btn_start_playing">Pumasok sa Tambayan! 🚀</string>
+    <string name="stars_earned">Tambay Stars</string>
+
+    <!-- Tambayan Rooms -->
+    <string name="room_main_lobby">🇵🇭 General Tambayan (Lobby)</string>
+    <string name="room_hs_life">🏫 High School Life &amp; Chismis</string>
+    <string name="room_hugot_crushes">💔 Hugot &amp; Secret Crushes</string>
+    <string name="room_study_hall">📚 Study Hall &amp; Homework Help</string>
+    <string name="room_gamers_den">🎮 Pinoy Gamers Lounge (MLBB/Roblox)</string>
+    <string name="room_opm_jam">🎵 OPM, Bini &amp; Jamming Hub</string>
+
+    <!-- Security & Policy Strings -->
+    <string name="policy_title">Campus Safety &amp; Anti-Bullying Policy</string>
+    <string name="policy_deped_title">DepEd Child Protection Policy (DO 40, s. 2012)</string>
+    <string name="policy_anti_bullying_title">Anti-Bullying Act (RA 10627)</string>
+    <string name="policy_data_privacy_title">Data Privacy Act of 2012 (RA 10173)</string>
+    <string name="policy_report_abuse">I-report ang Mensahe</string>
+    <string name="policy_block_user">I-block ang User</string>
+
+    <!-- Empty and Loading states -->
+    <string name="loading_title">Kumokonekta sa Tambayan Server…</string>
+    <string name="loading_subtitle">Ikinakarga ang mga mensahe, rooms, at mga online tambayers!</string>
+    <string name="empty_offline_title">Walang Signal sa Canteen!</string>
+    <string name="empty_offline_subtitle">Pakisuri ang iyong internet o pindutin para mag-reconnect sa tambayan!</string>
+    <string name="btn_retry">Subukan Muli</string>
+    <string name="default_web_client_id" translatable="false">482355621819-2elph00jut8f3pvcpr4ds79co0l9lvd5.apps.googleusercontent.com</string>
+</resources>

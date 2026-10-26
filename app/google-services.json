@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "482355621819",
+    "project_id": "gen-lang-client-0971067656",
+    "storage_bucket": "gen-lang-client-0971067656.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:482355621819:android:cc8fa750eb5782bc22de9e",
+        "android_client_info": {
+          "package_name": "com.aistudio.tambayanchat.kdjmvw"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "482355621819-smg6nqbttsok28juemmfmtqqj6punqse.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.aistudio.tambayanchat.kdjmvw",
+            "certificate_hash": "4ca4f67eaed08735c223cfc76472c91d141da2c7"
+          }
+        },
+        {
+          "client_id": "482355621819-2elph00jut8f3pvcpr4ds79co0l9lvd5.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBlOM74gcxt_1n8pYVA48GzXijTdYBMCXk"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "482355621819-2elph00jut8f3pvcpr4ds79co0l9lvd5.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

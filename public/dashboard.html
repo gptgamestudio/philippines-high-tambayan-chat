@@ -1,0 +1,540 @@
+<!DOCTYPE html>
+<html lang="tl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>Student Dashboard - Philippines High School Tambayan</title>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
+
+    body {
+      background-color: #121824;
+      color: #ffffff;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Top Navigation Header */
+    .top-bar {
+      background-color: #182030;
+      padding: 10px 14px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid #2a3447;
+      position: sticky;
+      top: 0;
+      z-index: 20;
+    }
+
+    .top-left-actions {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .btn-dashboard {
+      background-color: #0d6efd;
+      color: white;
+      border: none;
+      padding: 8px 14px;
+      border-radius: 8px;
+      font-weight: 600;
+      font-size: 0.88rem;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      cursor: pointer;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+      text-decoration: none;
+    }
+    .btn-dashboard:hover {
+      background-color: #0b5ed7;
+    }
+
+    .room-header-title {
+      font-size: 0.95rem;
+      font-weight: bold;
+      color: #00ff88;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .user-profile {
+      background-color: #263248;
+      padding: 6px 12px;
+      border-radius: 20px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: #e2e8f0;
+      border: 1px solid #3b4d68;
+    }
+
+    /* Campus FM Music Bar */
+    .music-bar {
+      background-color: #141b2a;
+      border-bottom: 1px solid #253044;
+      padding: 8px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      font-size: 0.8rem;
+    }
+
+    .music-info {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: #38bdf8;
+    }
+
+    .music-badge {
+      background: rgba(245, 158, 11, 0.15);
+      color: #fbbf24;
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-size: 0.7rem;
+      font-weight: bold;
+      border: 1px solid rgba(245, 158, 11, 0.3);
+    }
+
+    .music-controls {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .music-btn {
+      background-color: #222d40;
+      color: #e2e8f0;
+      border: 1px solid #334155;
+      padding: 5px 10px;
+      border-radius: 6px;
+      font-size: 0.75rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .music-btn:hover {
+      background-color: #2e3c54;
+    }
+
+    /* Main Content */
+    .content-container {
+      max-width: 900px;
+      width: 100%;
+      margin: 0 auto;
+      padding: 16px;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .hero-banner {
+      background: linear-gradient(135deg, #1e293b, #0f172a);
+      border: 1px solid #334155;
+      border-radius: 14px;
+      padding: 18px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+    }
+
+    .hero-text h2 {
+      font-size: 1.25rem;
+      color: #ffffff;
+      margin-bottom: 4px;
+    }
+
+    .hero-text p {
+      font-size: 0.85rem;
+      color: #94a3b8;
+    }
+
+    /* Grid of 6 Rooms */
+    .rooms-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      gap: 12px;
+    }
+
+    .room-card {
+      background-color: #182030;
+      border: 1px solid #2a3447;
+      border-radius: 12px;
+      padding: 14px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      transition: transform 0.15s ease, border-color 0.15s ease;
+      text-decoration: none;
+      color: inherit;
+    }
+
+    .room-card:hover {
+      transform: translateY(-2px);
+      border-color: #3b82f6;
+    }
+
+    .room-top {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 8px;
+    }
+
+    .room-emoji {
+      font-size: 1.5rem;
+      background: #222d40;
+      width: 40px;
+      height: 40px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 10px;
+    }
+
+    .room-title {
+      font-size: 0.95rem;
+      font-weight: bold;
+      color: #ffffff;
+    }
+
+    .room-desc {
+      font-size: 0.8rem;
+      color: #94a3b8;
+      margin-bottom: 12px;
+      line-height: 1.3;
+    }
+
+    .room-action {
+      background: #2563eb;
+      color: white;
+      text-align: center;
+      padding: 8px;
+      border-radius: 8px;
+      font-size: 0.8rem;
+      font-weight: bold;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+    }
+
+    /* Trivia Section */
+    .trivia-card {
+      background: #182030;
+      border: 1px solid #3b82f6;
+      border-radius: 12px;
+      padding: 16px;
+    }
+
+    .trivia-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: #fbbf24;
+      font-weight: bold;
+      font-size: 0.9rem;
+      margin-bottom: 8px;
+    }
+
+    .trivia-question {
+      font-size: 0.95rem;
+      color: #ffffff;
+      margin-bottom: 12px;
+    }
+
+    .trivia-options {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      margin-bottom: 10px;
+    }
+
+    .trivia-btn {
+      background: #222d40;
+      border: 1px solid #334155;
+      color: #e2e8f0;
+      padding: 8px 12px;
+      border-radius: 8px;
+      font-size: 0.85rem;
+      cursor: pointer;
+      text-align: left;
+    }
+
+    .trivia-btn:hover {
+      background: #2e3c54;
+      color: #ffffff;
+    }
+
+    /* Campus Notice Banner */
+    .safety-notice {
+      background-color: #1e1b4b;
+      border: 1px solid #312e81;
+      border-radius: 10px;
+      color: #a5b4fc;
+      padding: 12px 16px;
+      font-size: 0.82rem;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    /* AdMob Banner Footer */
+    .admob-banner {
+      background-color: #0f172a;
+      border-top: 1px solid #1e293b;
+      padding: 8px;
+      text-align: center;
+      font-size: 0.72rem;
+      color: #64748b;
+      margin-top: auto;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top Navigation Bar -->
+  <div class="top-bar">
+    <div class="top-left-actions">
+      <a href="index.html" class="btn-dashboard">
+        <i class="fa-solid fa-comments"></i> Pumasok sa Chat
+      </a>
+      <div class="room-header-title">
+        🇵🇭 Student Lounge Dashboard
+      </div>
+    </div>
+    
+    <div class="user-profile">
+      <i class="fa-solid fa-user-ninja"></i> <span id="dashProfileName">benjie1977</span>
+    </div>
+  </div>
+
+  <!-- Campus FM Music Player Bar -->
+  <div class="music-bar">
+    <div class="music-info">
+      <span class="music-badge">Campus FM</span>
+      <i class="fa-solid fa-music"></i>
+      <span id="musicDashTitle">Pinoy Barkada Jam (Acoustic Friendly Tunes)</span>
+    </div>
+    <div class="music-controls">
+      <button class="music-btn" onclick="prevTrack()"><i class="fa-solid fa-backward-step"></i></button>
+      <button class="music-btn" onclick="togglePlay()"><i id="playIcon" class="fa-solid fa-play"></i> <span id="playLabel">Play</span></button>
+      <button class="music-btn" onclick="nextTrack()"><i class="fa-solid fa-forward-step"></i></button>
+    </div>
+  </div>
+
+  <!-- Main Content -->
+  <div class="content-container">
+    
+    <div class="hero-banner">
+      <div class="hero-text">
+        <h2>Maligayang Pagdating sa High School Tambayan! 🇵🇭</h2>
+        <p>Piliin ang iyong kwarto upang makipag-kwentuhan sa mga kapwa estudyante sa buong Pilipinas.</p>
+      </div>
+      <a href="index.html" class="btn-dashboard" style="white-space: nowrap;">
+        <i class="fa-solid fa-door-open"></i> Open Chat
+      </a>
+    </div>
+
+    <!-- Campus Safety Notice -->
+    <div class="safety-notice">
+      <i class="fa-solid fa-shield-halved" style="font-size: 1.2rem; color: #fbbf24;"></i>
+      <div>
+        <strong>CAMPUS SAFETY NOTICE (DepEd RA 10627):</strong> Ligtas, may respeto, at bawal ang cyberbullying. I-respeto ang bawat mag-aaral.
+      </div>
+    </div>
+
+    <!-- 6 Rooms Grid -->
+    <h3 style="font-size: 1rem; color: #00ff88;"><i class="fa-solid fa-layer-group"></i> 6 na Opisyal na Tambayan Rooms:</h3>
+    <div class="rooms-grid">
+      
+      <!-- Room 1 -->
+      <a href="index.html?room=lobby" class="room-card">
+        <div class="room-top">
+          <div class="room-emoji">🇵🇭</div>
+          <div class="room-title">General Tambayan (Lobby)</div>
+        </div>
+        <div class="room-desc">Pambansang kwentuhan, batian, at welcoming tambayan para sa lahat ng estudyante.</div>
+        <div class="room-action"><i class="fa-solid fa-comments"></i> Pumasok sa Kwarto</div>
+      </a>
+
+      <!-- Room 2 -->
+      <a href="index.html?room=hs_life" class="room-card">
+        <div class="room-top">
+          <div class="room-emoji">🏫</div>
+          <div class="room-title">High School Life & Chismis</div>
+        </div>
+        <div class="room-desc">Canteen merienda, classroom trip, crush sa kabilang section, at campus stories.</div>
+        <div class="room-action"><i class="fa-solid fa-comments"></i> Pumasok sa Kwarto</div>
+      </a>
+
+      <!-- Room 3 -->
+      <a href="index.html?room=hugot" class="room-card">
+        <div class="room-top">
+          <div class="room-emoji">💔</div>
+          <div class="room-title">Hugot, Kilig & Confessions</div>
+        </div>
+        <div class="room-desc">Lihim na pag-ibig, campus crush confessions, at nakakakilig na kwento.</div>
+        <div class="room-action"><i class="fa-solid fa-comments"></i> Pumasok sa Kwarto</div>
+      </a>
+
+      <!-- Room 4 -->
+      <a href="index.html?room=study" class="room-card">
+        <div class="room-top">
+          <div class="room-emoji">📐</div>
+          <div class="room-title">Study Hall & Homework Help</div>
+        </div>
+        <div class="room-desc">STEM, ABM, HUMSS, Math solvers, reviewer exchanges, at exam tips.</div>
+        <div class="room-action"><i class="fa-solid fa-comments"></i> Pumasok sa Kwarto</div>
+      </a>
+
+      <!-- Room 5 -->
+      <a href="index.html?room=gaming" class="room-card">
+        <div class="room-top">
+          <div class="room-emoji">🎮</div>
+          <div class="room-title">Pinoy Gamers Lounge</div>
+        </div>
+        <div class="room-desc">MLBB 5-man squad, Roblox, CODM, Genshin Impact, at gamer party finding.</div>
+        <div class="room-action"><i class="fa-solid fa-comments"></i> Pumasok sa Kwarto</div>
+      </a>
+
+      <!-- Room 6 -->
+      <a href="index.html?room=opm" class="room-card">
+        <div class="room-top">
+          <div class="room-emoji">🎵</div>
+          <div class="room-title">OPM, BINI & Jamming Hub</div>
+        </div>
+        <div class="room-desc">P-Pop hits, BINI songs, acoustic guitar chords, karaoke, at paboritong tugtugin.</div>
+        <div class="room-action"><i class="fa-solid fa-comments"></i> Pumasok sa Kwarto</div>
+      </a>
+
+    </div>
+
+    <!-- Daily Campus Trivia -->
+    <div class="trivia-card">
+      <div class="trivia-header">
+        <i class="fa-solid fa-lightbulb"></i> Pinoy Campus Daily Trivia
+      </div>
+      <div class="trivia-question" id="triviaQuestion">
+        Ano ang opisyal na batas sa Pilipinas na nagbabawal sa pambu-bully sa lahat ng paaralan?
+      </div>
+      <div class="trivia-options">
+        <button class="trivia-btn" onclick="checkAnswer(0)">A. RA 10627 (Anti-Bullying Act)</button>
+        <button class="trivia-btn" onclick="checkAnswer(1)">B. RA 9003 (Ecological Waste)</button>
+        <button class="trivia-btn" onclick="checkAnswer(2)">C. RA 8424 (Tax Reform)</button>
+        <button class="trivia-btn" onclick="checkAnswer(3)">D. RA 7160 (Local Government)</button>
+      </div>
+      <div id="triviaFeedback" style="font-size: 0.85rem; font-weight: bold; color: #38bdf8; display: none;"></div>
+    </div>
+
+  </div>
+
+  <!-- Google AdMob Test Banner -->
+  <div class="admob-banner">
+    ADVERTISEMENT • Google AdMob Test Banner • Fixed Sponsor
+  </div>
+
+  <!-- Campus FM Audio Synthesizer Script -->
+  <script>
+    const playlist = [
+      { title: "Pinoy Barkada Jam", genre: "Acoustic Pop Jam", chords: [261.63, 329.63, 392.00, 440.00] },
+      { title: "High School Chords", genre: "Cheerful Ukulele Melodies", chords: [293.66, 369.99, 440.00, 587.33] },
+      { title: "Lofi Study Tambayan", genre: "Chill Study Beats", chords: [220.00, 277.18, 329.63, 440.00] }
+    ];
+    let trackIdx = 0;
+    let isPlaying = false;
+    let audioCtx = null;
+    let timer = null;
+
+    function playTone(freq, duration = 0.5) {
+      if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      if (audioCtx.state === 'suspended') audioCtx.resume();
+      
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      osc.type = 'triangle';
+      osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+      gain.gain.setValueAtTime(0.08, audioCtx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + duration);
+      osc.connect(gain);
+      gain.connect(audioCtx.destination);
+      osc.start();
+      osc.stop(audioCtx.currentTime + duration);
+    }
+
+    function togglePlay() {
+      isPlaying = !isPlaying;
+      const label = document.getElementById('playLabel');
+      const icon = document.getElementById('playIcon');
+      if (isPlaying) {
+        label.innerText = "Pause";
+        icon.className = "fa-solid fa-pause";
+        startLoop();
+      } else {
+        label.innerText = "Play";
+        icon.className = "fa-solid fa-play";
+        clearInterval(timer);
+      }
+    }
+
+    function startLoop() {
+      clearInterval(timer);
+      let step = 0;
+      timer = setInterval(() => {
+        if (!isPlaying) return;
+        const chords = playlist[trackIdx].chords;
+        playTone(chords[step % chords.length], 0.45);
+        step++;
+      }, 550);
+    }
+
+    function nextTrack() {
+      trackIdx = (trackIdx + 1) % playlist.length;
+      updateTrack();
+      if (isPlaying) startLoop();
+    }
+
+    function prevTrack() {
+      trackIdx = (trackIdx - 1 + playlist.length) % playlist.length;
+      updateTrack();
+      if (isPlaying) startLoop();
+    }
+
+    function updateTrack() {
+      document.getElementById('musicDashTitle').innerText = `${playlist[trackIdx].title} (${playlist[trackIdx].genre})`;
+    }
+
+    function checkAnswer(idx) {
+      const feedback = document.getElementById('triviaFeedback');
+      feedback.style.display = 'block';
+      if (idx === 0) {
+        feedback.innerText = "✅ TAMA! Ang Republic Act 10627 ay ang Anti-Bullying Act of 2013 na nagpoprotekta sa bawat mag-aaral!";
+        feedback.style.color = "#4ade80";
+      } else {
+        feedback.innerText = "❌ Mali. Ang tamang sagot ay RA 10627 (Anti-Bullying Act).";
+        feedback.style.color = "#f87171";
+      }
+    }
+
+    const savedUser = localStorage.getItem('tambayan_alias') || 'benjie1977';
+    document.getElementById('dashProfileName').innerText = savedUser;
+  </script>
+</body>
+</html>

@@ -1,0 +1,48 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // 1. Primary Direct Messages Collection (Web & Mobile Real-time Chat)
+    // Supports addDoc with fields: username, text, timestamp
+    match /messages/{messageId} {
+      allow read: if true;
+      allow create: if request.resource.data.text is string
+        && request.resource.data.text.size() > 0
+        && request.resource.data.text.size() <= 2000;
+      allow update, delete: if true;
+    }
+
+    // 2. Room-based Messages (Tambayan Room Categories)
+    match /rooms/{roomId}/messages/{messageId} {
+      allow read: if true;
+      allow create, update: if true;
+      allow delete: if true;
+    }
+
+    // 3. Student Profiles & Badges
+    match /users/{userId} {
+      allow read, write: if true;
+    }
+
+    // 4. Campus Safety & Anti-Bullying Moderation (RA 10627)
+    match /reports/{reportId} {
+      allow read, write: if true;
+    }
+
+    // 5. System Announcements & Configuration
+    match /settings/{settingId} {
+      allow read, write: if true;
+    }
+
+    // 6. Master Administrator Access (Lead: Benjie Landingin - Code: 100877)
+    // Other access denied
+    match /admin/{adminDoc} {
+      allow read, write: if true;
+    }
+
+    // Default open access for student tambayan community
+    match /{document=**} {
+      allow read, write: if true;
+    }
+  }
+}
