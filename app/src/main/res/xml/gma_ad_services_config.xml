@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ad-services-config>
+    <!-- Disable Privacy Sandbox attribution, topics, and protected audience on emulators to avoid ServiceUnavailableException -->
+    <attribution allowAdPartners="false" />
+    <topics allowAdPartners="false" />
+    <protected-audience allowAdPartners="false" />
+</ad-services-config>
