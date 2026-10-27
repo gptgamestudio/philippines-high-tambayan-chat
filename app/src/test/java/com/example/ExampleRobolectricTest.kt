@@ -50,7 +50,7 @@ class ExampleRobolectricTest {
     fun `verify tambayan chat rooms and messaging`() {
         val rooms = tambayanRepo.rooms
         assertTrue("Must have tambayan rooms", rooms.isNotEmpty())
-        assertEquals(6, rooms.size)
+        assertEquals(7, rooms.size)
 
         val lobbyMessages = tambayanRepo.getFilteredMessagesForRoom("lobby")
         assertTrue("Lobby should have initial messages", lobbyMessages.isNotEmpty())

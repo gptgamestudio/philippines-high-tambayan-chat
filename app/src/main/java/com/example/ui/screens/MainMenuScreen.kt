@@ -74,6 +74,9 @@ import com.example.model.StudentProfile
 import com.example.model.TambayanRoom
 import com.example.ui.components.TactileButton
 import com.example.ui.components.TambayanSquareQuickBar
+import com.example.ui.components.CampusHubTopBar
+import com.example.ui.components.TambayanWelcomeBanner
+import com.example.ui.components.TambayanStatsGrid
 import com.example.ui.theme.TambayanBlue
 import com.example.ui.theme.TambayanCyan
 import com.example.ui.theme.TambayanGold
@@ -134,6 +137,35 @@ fun MainMenuScreen(
         contentPadding = PaddingValues(16.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
+        // TOP NAVIGATION SWITCHER (Campus Hub PH • benjie1978 • Grade 10 Completer)
+        item {
+            CampusHubTopBar(
+                currentAlias = studentProfile.alias,
+                strandOrGrade = studentProfile.strand.displayName,
+                isMainDashboardActive = true,
+                onMainDashboardClick = { /* already in Main Dash */ },
+                onStudentDashClick = { onEnterRoom("lobby") }
+            )
+        }
+
+        // VIEW 1: WELCOME GRADIENT BANNER
+        item {
+            TambayanWelcomeBanner(
+                userAlias = studentProfile.alias,
+                onOpenChatRoomsClick = { onEnterRoom("lobby") }
+            )
+        }
+
+        // STATS GRID (7 Rooms, 1428 Online Students, 34 Video Calls, 520+ Files Shared)
+        item {
+            TambayanStatsGrid(
+                activeRoomsCount = "${rooms.size.coerceAtLeast(7)} Rooms",
+                onlineStudentsCount = "1,428",
+                videoCallsCount = "34 Rooms",
+                apkSharedCount = "520+"
+            )
+        }
+
         // AUTO-UPDATE & NEW FEATURES NOTIFICATION CARD
         if (appUpdateInfo.hasUpdate && !isUpdateDialogDismissed) {
             item {

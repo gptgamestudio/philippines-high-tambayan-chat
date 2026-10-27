@@ -19,7 +19,16 @@ data class TambayanRoom(
     val subtitle: String,
     val emoji: String,
     val onlineCount: Int,
-    val unreadBadge: Int = 0
+    val unreadBadge: Int = 0,
+    val roomType: String = "Public & Free",
+    val adFrequency: String = "Bawat 5 Mensahe"
+)
+
+data class RoomActiveMember(
+    val name: String,
+    val role: String,
+    val isVideo: Boolean = false,
+    val isOnline: Boolean = true
 )
 
 data class ChatMessage(

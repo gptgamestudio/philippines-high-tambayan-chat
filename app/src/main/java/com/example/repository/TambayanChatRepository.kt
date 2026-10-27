@@ -45,45 +45,52 @@ class TambayanChatRepository(
     val rooms = listOf(
         TambayanRoom(
             id = "lobby",
-            title = "🇵🇭 General Tambayan (Lobby)",
-            subtitle = "Pambansang kwentuhan, batian, at welcoming tambayan!",
-            emoji = "🏛️",
-            onlineCount = 1248
+            title = "General Tambayan",
+            subtitle = "Pangkalahatang talakayan at kwentuhan ng mga estudyante.",
+            emoji = "💬",
+            onlineCount = 42
         ),
         TambayanRoom(
-            id = "hs_life",
-            title = "🏫 High School Life & Chismis",
-            subtitle = "Canteen merienda, classroom trip, at terror teachers!",
-            emoji = "🎒",
-            onlineCount = 832
+            id = "lounge",
+            title = "Campus Lounge",
+            subtitle = "Tambayan malapit sa canteen at campus grounds.",
+            emoji = "🏫",
+            onlineCount = 28
         ),
         TambayanRoom(
-            id = "hugot",
-            title = "💔 Hugot, Kilig & Confessions",
-            subtitle = "Campus crush, lihim na pag-ibig, at kilig moments!",
-            emoji = "💌",
-            onlineCount = 645
+            id = "homework",
+            title = "Homework Help PH",
+            subtitle = "Tulungan sa takdang-aralin at mga proyekto sa eskuwela.",
+            emoji = "📖",
+            onlineCount = 55
         ),
         TambayanRoom(
-            id = "study",
-            title = "📚 Study Hall & Homework Help",
-            subtitle = "STEM, ABM, HUMSS, Math solvers at exam tips!",
+            id = "barkada",
+            title = "BarkadaTambay",
+            subtitle = "Masayang kwentuhan ng barkada at tropa.",
+            emoji = "👥",
+            onlineCount = 19
+        ),
+        TambayanRoom(
+            id = "scitech",
+            title = "Science & Tech Lab",
+            subtitle = "Diskusyon tungkol sa agham, coding, at teknolohiya.",
+            emoji = "🔬",
+            onlineCount = 31
+        ),
+        TambayanRoom(
+            id = "math",
+            title = "Math Wizards",
+            subtitle = "Lutasin ang mga math equations at formula nang sama-sama.",
             emoji = "📐",
-            onlineCount = 419
+            onlineCount = 24
         ),
         TambayanRoom(
-            id = "gaming",
-            title = "🎮 Pinoy Gamers Lounge",
-            subtitle = "MLBB 5-man squad, Roblox, CODM, and Genshin!",
-            emoji = "👾",
-            onlineCount = 954
-        ),
-        TambayanRoom(
-            id = "opm",
-            title = "🎵 OPM, BINI & Jamming Hub",
-            subtitle = "P-Pop hits, BINI songs, acoustic chords at tugtugan!",
-            emoji = "🎸",
-            onlineCount = 512
+            id = "arts",
+            title = "Arts & Culture Hub",
+            subtitle = "Disenyo, sining, at pagpapalitan ng malikhaing ideya.",
+            emoji = "🎨",
+            onlineCount = 15
         )
     )
 
@@ -111,37 +118,44 @@ class TambayanChatRepository(
 
     private val initialMessages = mapOf(
         "lobby" to mutableListOf(
-            ChatMessage("1", "lobby", "Mark_STEM12", "😎", "🔬 STEM", "Magandang hapon sa lahat ng taga-Tambayan! Kumusta araw niyo?", "10:15 AM", false, 14),
-            ChatMessage("2", "lobby", "Princess_Bea", "🎀", "📜 HUMSS", "Hello barkada! Katatapos lang ng oral defense namin kanina haha!", "10:16 AM", false, 9),
-            ChatMessage("3", "lobby", "Jayson_TVL", "🧢", "🛠️ TVL", "Sino may vacant period ngayon? Tara tambay sa canteen!", "10:18 AM", false, 11),
-            ChatMessage("4", "lobby", "Admin_Boss", "👑", "👑 ADMIN", "Welcome to PHILIPPINES HIGH TAMBAYAN CHAT! Mangyaring sumunod sa Anti-Bullying Guidelines!", "10:20 AM", false, 32),
-            ChatMessage("5", "lobby", "Kyle_G10", "⚡", "🎓 G10", "Sana all tapos na exam! Kami bukas pa periodics!", "10:22 AM", false, 7)
+            ChatMessage("0", "lobby", "benjie1978", "😎", "👑 Moderator", "Mabuhay mga ka-tambay! Maligayang pagdating sa ating bagong pro chatroom system.", "12:30 PM", false, 48),
+            ChatMessage("1", "lobby", "Maria Santos", "🎀", "🎓 G10", "Magandang hapon mga ka-Tambay! Kumusta ang video stream natin?", "12:31 PM", false, 14),
+            ChatMessage("2", "lobby", "Juan Dela Cruz", "🧢", "🔬 STEM", "Malinaw at mabilis ang chat! Nakakatuwa itong bagong campus hub.", "12:32 PM", false, 19),
+            ChatMessage("3", "lobby", "Ana Reyes", "🌸", "📚 Mentor", "Welcome sa lahat! Kung may kailangan kayong tulong, tanong lang kayo.", "12:33 PM", false, 25)
         ),
-        "hs_life" to mutableListOf(
-            ChatMessage("101", "hs_life", "Chloe_ABM", "💼", "💼 ABM", "Grabe yung mainit na banana cue sa canteen kanina, panalo!", "09:40 AM", false, 18),
-            ChatMessage("102", "hs_life", "Paolo_G9", "🏃", "📙 G9", "Nakalimutan ko magdala ng cartolina para sa project!", "09:45 AM", false, 24),
-            ChatMessage("103", "hs_life", "Sarah_SHS", "🌸", "🔬 STEM", "Bilis ng oras, senior high completer na kami this school year!", "09:50 AM", false, 15)
+        "lounge" to mutableListOf(
+            ChatMessage("101", "lounge", "Chloe_ABM", "💼", "💼 ABM", "Grabe yung mainit na banana cue sa canteen kanina, panalo!", "09:40 AM", false, 18),
+            ChatMessage("102", "lounge", "Paolo_G9", "🏃", "📙 G9", "Tara chill muna dito sa lounge bago mag-start ang susunod na klase!", "09:45 AM", false, 24),
+            ChatMessage("103", "lounge", "Sarah_SHS", "🌸", "🔬 STEM", "Bilis ng oras, senior high completer na kami this school year!", "09:50 AM", false, 15)
         ),
-        "hugot" to mutableListOf(
-            ChatMessage("201", "hugot", "Secret_Admirer", "💌", "📜 HUMSS", "Crush ko yung nasa Section Diamond na laging may hawak na gitara...", "11:00 AM", false, 42),
-            ChatMessage("202", "hugot", "Miggy_Kilig", "🌹", "🎓 G10", "Yung nginitian ka niya habang naglalakad sa corridor, grabe kilig!", "11:05 AM", false, 35),
-            ChatMessage("203", "hugot", "Ella_Quotes", "💭", "🎒 G7", "Ang pag-aaral ay parang barkada, kapag sama-sama, kayang-kaya!", "11:10 AM", false, 29)
+        "homework" to mutableListOf(
+            ChatMessage("201", "homework", "Nathan_MathWhiz", "📐", "🔬 STEM", "Sa may kailangan ng reviewer sa Physics at Pre-Cal, share ko reviewers mamaya!", "08:30 AM", false, 55),
+            ChatMessage("202", "homework", "Angel_G8", "📖", "📘 G8", "Sino may notes para sa Araling Panlipunan tungkol sa Kasaysayan ng Pilipinas?", "08:35 AM", false, 12),
+            ChatMessage("203", "homework", "Nathan_MathWhiz", "📐", "🔬 STEM", "Meron ako Angel! Padala ko list ng mga bayani at mahalagang petsa!", "08:37 AM", false, 28)
         ),
-        "study" to mutableListOf(
-            ChatMessage("301", "study", "Nathan_MathWhiz", "📐", "🔬 STEM", "Sa may kailangan ng reviewer sa Physics at Pre-Cal, share ko reviewers mamaya!", "08:30 AM", false, 55),
-            ChatMessage("302", "study", "Angel_G8", "📖", "📘 G8", "Sino may notes para sa Araling Panlipunan tungkol sa Kasaysayan ng Pilipinas?", "08:35 AM", false, 12),
-            ChatMessage("303", "study", "Nathan_MathWhiz", "📐", "🔬 STEM", "Meron ako Angel! Padala ko list ng mga bayani at mahalagang petsa!", "08:37 AM", false, 28)
+        "barkada" to mutableListOf(
+            ChatMessage("301", "barkada", "Secret_Admirer", "💌", "📜 HUMSS", "Crush ko yung nasa Section Diamond na laging may hawak na gitara...", "11:00 AM", false, 42),
+            ChatMessage("302", "barkada", "Miggy_Kilig", "🌹", "🎓 G10", "Yung nginitian ka niya habang naglalakad sa corridor, grabe kilig!", "11:05 AM", false, 35),
+            ChatMessage("303", "barkada", "Ella_Quotes", "💭", "🎒 G7", "Ang pag-aaral ay parang barkada, kapag sama-sama, kayang-kaya!", "11:10 AM", false, 29)
         ),
-        "gaming" to mutableListOf(
-            ChatMessage("401", "gaming", "Zed_Mythic", "🎮", "🛠️ TVL", "LF 2 friendly players for 5-man rank! Chill gaming lang, bawal toxic!", "10:00 AM", false, 19),
-            ChatMessage("402", "gaming", "ChouGod99", "🥊", "🎓 G10", "G ako lods! Pasama sa squad mamayang uwian!", "10:02 AM", false, 8),
-            ChatMessage("403", "gaming", "Rin_Roblox", "🕹️", "🎒 G7", "Sino naglalaro ng Roblox o Genshin? Add niyo ako!", "10:05 AM", false, 14)
+        "scitech" to mutableListOf(
+            ChatMessage("401", "scitech", "Alex_Coder", "💻", "🔬 STEM", "Sino nag-aaral ng Kotlin at Android development dito? Ang galing gumawa ng app!", "10:15 AM", false, 31),
+            ChatMessage("402", "scitech", "Kim_Robotics", "🤖", "🛠️ TVL", "Katatapos lang ng robot simulation namin kanina sa lab!", "10:20 AM", false, 22)
         ),
-        "opm" to mutableListOf(
-            ChatMessage("501", "opm", "Blooms_Pinoy", "🌸", "📜 HUMSS", "Walang kupas ang Salamin, Salamin at Pantropiko ng BINI! LSS buong araw!", "10:30 AM", false, 67),
-            ChatMessage("502", "opm", "Acoustic_Dave", "🎸", "🔬 STEM", "Jamming tayo mamaya sa grandstand bago umuwi, tugtugan tayo ng Eraserheads at Lola Amour!", "10:35 AM", false, 33),
-            ChatMessage("503", "opm", "Aaliyah_Music", "🎤", "💼 ABM", "Count me in! Tugtugin natin 'Raining in Manila'!", "10:38 AM", false, 22)
-        )
+        "math" to mutableListOf(
+            ChatMessage("501", "math", "Carlo_Calculus", "📊", "🔬 STEM", "Tip para sa Quadratic Formula: Tandaan lang ang b^2 - 4ac para sa discriminant!", "11:20 AM", false, 38),
+            ChatMessage("502", "math", "Grace_G9", "📐", "📙 G9", "Salamat Kuya Carlo, malaking tulong sa quiz mamaya!", "11:25 AM", false, 16)
+        ),
+        "arts" to mutableListOf(
+            ChatMessage("601", "arts", "Blooms_Pinoy", "🌸", "📜 HUMSS", "Walang kupas ang Salamin, Salamin at Pantropiko ng BINI! LSS buong araw!", "10:30 AM", false, 67),
+            ChatMessage("602", "arts", "Acoustic_Dave", "🎸", "🔬 STEM", "Jamming tayo mamaya sa grandstand, tugtugan tayo ng gitara!", "10:35 AM", false, 33)
+        ),
+        // Fallback backward compatibility keys
+        "hs_life" to mutableListOf(),
+        "hugot" to mutableListOf(),
+        "study" to mutableListOf(),
+        "gaming" to mutableListOf(),
+        "opm" to mutableListOf()
     )
 
     private val _messagesFlow = MutableStateFlow<Map<String, List<ChatMessage>>>(initialMessages)

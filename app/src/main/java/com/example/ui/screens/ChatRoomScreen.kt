@@ -28,11 +28,13 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material.icons.automirrored.filled.Send
+import androidx.compose.material.icons.filled.AttachFile
 import androidx.compose.material.icons.filled.Block
 import androidx.compose.material.icons.filled.Bookmark
 import androidx.compose.material.icons.filled.Call
 import androidx.compose.material.icons.filled.CallEnd
 import androidx.compose.material.icons.filled.Campaign
+import androidx.compose.material.icons.filled.CardGiftcard
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Download
 import androidx.compose.material.icons.filled.Edit
@@ -41,16 +43,23 @@ import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.Flag
 import androidx.compose.material.icons.filled.FolderOpen
 import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.Mic
 import androidx.compose.material.icons.filled.MicOff
 import androidx.compose.material.icons.filled.Phone
+import androidx.compose.material.icons.filled.PhotoCamera
 import androidx.compose.material.icons.filled.Security
+import androidx.compose.material.icons.filled.SentimentSatisfied
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.material.icons.filled.Shield
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.filled.Videocam
 import androidx.compose.material.icons.filled.VideocamOff
 import androidx.compose.material.icons.filled.VolumeUp
+import com.example.ui.components.CampusHubTopBar
+import com.example.ui.components.TambayanVideoCallBox
+import com.example.ui.components.TambayanRoomInfoAndMembers
 import android.content.Intent
 import android.net.Uri
 import android.util.Log
@@ -137,6 +146,8 @@ fun ChatRoomScreen(
 ) {
     var inputText by remember { mutableStateOf("") }
     var showProfileDialog by remember { mutableStateOf(false) }
+    var showRoomInfoDialog by remember { mutableStateOf(false) }
+    var showVideoCallBox by remember { mutableStateOf(true) }
     var selectedMessageForAction by remember { mutableStateOf<ChatMessage?>(null) }
     var messageToReport by remember { mutableStateOf<ChatMessage?>(null) }
     var moderationWarning by remember { mutableStateOf<String?>(null) }
@@ -190,6 +201,15 @@ fun ChatRoomScreen(
             .background(TambayanNavyBg)
             .navigationBarsPadding()
     ) {
+        // TOP NAVIGATION SWITCHER (Campus Hub PH • benjie1978 • Grade 10 Completer)
+        CampusHubTopBar(
+            currentAlias = studentProfile.alias,
+            strandOrGrade = studentProfile.strand.displayName,
+            isMainDashboardActive = false,
+            onMainDashboardClick = onBackClick,
+            onStudentDashClick = { /* already on Student Dash & Chatrooms */ }
+        )
+
         // TOP APP BAR
         Surface(
             color = TambayanNavyCard,
@@ -498,31 +518,146 @@ fun ChatRoomScreen(
                     }
                 }
 
-                // ROW 3: HORIZONTAL ROOM PICKER TABS
+                // ROW 3: HORIZONTAL ROOM PICKER TABS (7 Rooms Pill Switcher)
                 LazyRow(
                     horizontalArrangement = Arrangement.spacedBy(6.dp),
-                    contentPadding = PaddingValues(horizontal = 2.dp)
+                    contentPadding = PaddingValues(horizontal = 2.dp),
+                    modifier = Modifier.testTag("room_tabs_container")
                 ) {
                     items(allRooms) { room ->
                         val isSelected = room.id == currentRoom.id
-                        FilterChip(
-                            selected = isSelected,
-                            onClick = { onSwitchRoom(room.id) },
-                            label = {
+                        Box(
+                            modifier = Modifier
+                                .clip(RoundedCornerShape(10.dp))
+                                .background(if (isSelected) Color(0xFF2563EB) else Color(0xFF1E293B))
+                                .clickable { onSwitchRoom(room.id) }
+                                .padding(horizontal = 10.dp, vertical = 6.dp)
+                                .testTag("tab_room_${room.id}"),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Text(room.emoji, fontSize = 12.sp)
+                                Spacer(modifier = Modifier.width(4.dp))
                                 Text(
-                                    text = "${room.emoji} ${room.title.split(' ').firstOrNull { it.isNotEmpty() } ?: room.title}",
+                                    text = room.title,
                                     fontSize = 11.sp,
-                                    fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal
+                                    fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
+                                    color = if (isSelected) Color.White else Color(0xFFCBD5E1)
                                 )
-                            },
-                            colors = FilterChipDefaults.filterChipColors(
-                                selectedContainerColor = TambayanBlue,
-                                selectedLabelColor = Color.White,
-                                containerColor = TambayanNavyElevated,
-                                labelColor = TambayanTextMuted
-                            ),
-                            modifier = Modifier.height(28.dp)
+                                Spacer(modifier = Modifier.width(5.dp))
+                                Box(
+                                    modifier = Modifier
+                                        .clip(RoundedCornerShape(6.dp))
+                                        .background(if (isSelected) Color(0x33FFFFFF) else Color(0x33000000))
+                                        .padding(horizontal = 4.dp, vertical = 1.dp)
+                                ) {
+                                    Text(
+                                        text = "${room.onlineCount}",
+                                        fontSize = 9.sp,
+                                        fontWeight = FontWeight.Bold,
+                                        color = if (isSelected) Color.White else Color(0xFF34D399)
+                                    )
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        // VIDEO CALL SQUARE BOX (Main Video + Controls Toolbar: Camera, Mic, Zoom, Pause, Invite)
+        AnimatedVisibility(visible = showVideoCallBox) {
+            Box(modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)) {
+                TambayanVideoCallBox(
+                    currentRoom = currentRoom,
+                    hostAlias = studentProfile.alias
+                )
+            }
+        }
+
+        // PRO CHATROOM FEED HEADER & ROOM INFO TOGGLE
+        Surface(
+            color = Color(0xFF0F172A),
+            modifier = Modifier
+                .fillMaxWidth()
+                .border(1.dp, Color(0xFF1E293B))
+        ) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 10.dp, vertical = 6.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text("💬", fontSize = 13.sp)
+                    Spacer(modifier = Modifier.width(5.dp))
+                    Text(
+                        text = "Pro Chatroom Feed",
+                        fontSize = 12.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = Color.White
+                    )
+                    Spacer(modifier = Modifier.width(6.dp))
+                    Box(
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(8.dp))
+                            .background(Color(0xFF10B981).copy(alpha = 0.2f))
+                            .border(1.dp, Color(0xFF10B981).copy(alpha = 0.3f), RoundedCornerShape(8.dp))
+                            .padding(horizontal = 5.dp, vertical = 2.dp)
+                    ) {
+                        Text(
+                            text = "Secure & Encrypted",
+                            fontSize = 8.sp,
+                            color = Color(0xFF34D399),
+                            fontWeight = FontWeight.Bold
                         )
+                    }
+                }
+
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(6.dp)
+                ) {
+                    // Video Box Toggle Button
+                    Box(
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(6.dp))
+                            .background(Color(0xFF1E293B))
+                            .clickable { showVideoCallBox = !showVideoCallBox }
+                            .padding(horizontal = 6.dp, vertical = 3.dp)
+                    ) {
+                        Text(
+                            text = if (showVideoCallBox) "Hide Video ▲" else "Show Video ▼",
+                            fontSize = 9.sp,
+                            color = Color(0xFF94A3B8),
+                            fontWeight = FontWeight.SemiBold
+                        )
+                    }
+
+                    // Room Info Button
+                    Box(
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(6.dp))
+                            .background(Color(0xFF1E293B))
+                            .clickable { showRoomInfoDialog = true }
+                            .padding(horizontal = 6.dp, vertical = 3.dp)
+                    ) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Icon(
+                                imageVector = Icons.Default.Info,
+                                contentDescription = "Room Info",
+                                tint = Color(0xFF60A5FA),
+                                modifier = Modifier.size(11.dp)
+                            )
+                            Spacer(modifier = Modifier.width(3.dp))
+                            Text(
+                                text = "Info & Members",
+                                fontSize = 9.sp,
+                                color = Color(0xFF60A5FA),
+                                fontWeight = FontWeight.SemiBold
+                            )
+                        }
                     }
                 }
             }
@@ -899,44 +1034,90 @@ fun ChatRoomScreen(
             }
         }
 
-        // MESSAGE INPUT BAR
+        // PRO CHAT INPUT TOOLBAR (Camera, APK/Paperclip, Gift, Emoji, Text Field, Send)
         Surface(
-            color = TambayanNavyCard,
+            color = Color(0xFF0F172A),
             shadowElevation = 8.dp,
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier
+                .fillMaxWidth()
+                .border(1.dp, Color(0xFF1E293B))
         ) {
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 10.dp, vertical = 8.dp),
+                    .padding(horizontal = 6.dp, vertical = 6.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
+                // Action Buttons: Camera, APK/File, Gift, Emoji
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(0.dp)
+                ) {
+                    IconButton(
+                        onClick = { Toast.makeText(context, "Nagbubukas ng Camera photo attachment...", Toast.LENGTH_SHORT).show() },
+                        modifier = Modifier
+                            .size(32.dp)
+                            .testTag("btn_attach_camera")
+                    ) {
+                        Icon(Icons.Default.PhotoCamera, contentDescription = "Camera", tint = Color(0xFF94A3B8), modifier = Modifier.size(16.dp))
+                    }
+
+                    IconButton(
+                        onClick = { Toast.makeText(context, "Nagbubukas ng APK / File attachment...", Toast.LENGTH_SHORT).show() },
+                        modifier = Modifier
+                            .size(32.dp)
+                            .testTag("btn_attach_apk")
+                    ) {
+                        Icon(Icons.Default.AttachFile, contentDescription = "Attach File", tint = Color(0xFF94A3B8), modifier = Modifier.size(16.dp))
+                    }
+
+                    IconButton(
+                        onClick = { Toast.makeText(context, "Nagbubukas ng Gift Store para sa mga ka-tambay!", Toast.LENGTH_SHORT).show() },
+                        modifier = Modifier
+                            .size(32.dp)
+                            .testTag("btn_attach_gift")
+                    ) {
+                        Icon(Icons.Default.CardGiftcard, contentDescription = "Gift", tint = Color(0xFFFBBF24), modifier = Modifier.size(16.dp))
+                    }
+
+                    IconButton(
+                        onClick = { Toast.makeText(context, "Binubuksan ang Emoji Picker...", Toast.LENGTH_SHORT).show() },
+                        modifier = Modifier
+                            .size(32.dp)
+                            .testTag("btn_attach_emoji")
+                    ) {
+                        Icon(Icons.Default.SentimentSatisfied, contentDescription = "Emoji", tint = Color(0xFFFACC15), modifier = Modifier.size(16.dp))
+                    }
+                }
+
+                Spacer(modifier = Modifier.width(4.dp))
+
                 OutlinedTextField(
                     value = inputText,
                     onValueChange = { inputText = it },
                     placeholder = {
                         Text(
-                            text = "chat txt here...",
-                            fontSize = 13.sp,
-                            color = TambayanTextMuted
+                            text = "Chat here...",
+                            fontSize = 12.sp,
+                            color = Color(0xFF64748B)
                         )
                     },
                     modifier = Modifier
                         .weight(1f)
                         .testTag("input_chat_message"),
-                    shape = RoundedCornerShape(24.dp),
+                    shape = RoundedCornerShape(12.dp),
                     colors = OutlinedTextFieldDefaults.colors(
-                        focusedContainerColor = TambayanNavyElevated,
-                        unfocusedContainerColor = TambayanNavyElevated,
-                        focusedTextColor = TambayanTextLight,
-                        unfocusedTextColor = TambayanTextLight,
-                        focusedBorderColor = TambayanBlue,
-                        unfocusedBorderColor = Color.Transparent
+                        focusedContainerColor = Color(0xFF020617),
+                        unfocusedContainerColor = Color(0xFF020617),
+                        focusedTextColor = Color.White,
+                        unfocusedTextColor = Color.White,
+                        focusedBorderColor = Color(0xFF3B82F6),
+                        unfocusedBorderColor = Color(0xFF1E293B)
                     ),
                     singleLine = true
                 )
 
-                Spacer(modifier = Modifier.width(8.dp))
+                Spacer(modifier = Modifier.width(6.dp))
 
                 IconButton(
                     onClick = {
@@ -946,15 +1127,16 @@ fun ChatRoomScreen(
                         }
                     },
                     modifier = Modifier
-                        .size(46.dp)
-                        .clip(CircleShape)
-                        .background(TambayanBlue)
+                        .size(38.dp)
+                        .clip(RoundedCornerShape(10.dp))
+                        .background(Color(0xFF2563EB))
                         .testTag("btn_send_chat")
                 ) {
                     Icon(
                         imageVector = Icons.AutoMirrored.Filled.Send,
                         contentDescription = "Send Message",
-                        tint = Color.White
+                        tint = Color.White,
+                        modifier = Modifier.size(16.dp)
                     )
                 }
             }
@@ -1293,6 +1475,34 @@ fun ChatRoomScreen(
                 showProfileDialog = false
             }
         )
+    }
+
+    // ROOM INFO & ACTIVE MEMBERS DIALOG
+    if (showRoomInfoDialog) {
+        Dialog(onDismissRequest = { showRoomInfoDialog = false }) {
+            Surface(
+                shape = RoundedCornerShape(20.dp),
+                color = Color(0xFF0F172A),
+                border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFF1E293B)),
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Column(modifier = Modifier.padding(14.dp)) {
+                    TambayanRoomInfoAndMembers(currentRoom = currentRoom)
+                    Spacer(modifier = Modifier.height(10.dp))
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clip(RoundedCornerShape(10.dp))
+                            .background(Color(0xFF1E293B))
+                            .clickable { showRoomInfoDialog = false }
+                            .padding(vertical = 10.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text("Isara (Close)", fontSize = 12.sp, fontWeight = FontWeight.Bold, color = Color.White)
+                    }
+                }
+            }
+        }
     }
 }
 
