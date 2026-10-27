@@ -90,7 +90,7 @@ fun TambayanWelcomeBanner(
                 Spacer(modifier = Modifier.height(10.dp))
 
                 Text(
-                    text = "Maligayang Pagbabalik, ${userAlias.ifBlank { "Benjie" }}!",
+                    text = "Philippines High School Tambayan Chat 🔥",
                     fontSize = 20.sp,
                     fontWeight = FontWeight.ExtraBold,
                     color = Color.White
@@ -99,7 +99,7 @@ fun TambayanWelcomeBanner(
                 Spacer(modifier = Modifier.height(4.dp))
 
                 Text(
-                    text = "Pumili ng room o pamahalaan ang iyong mga aktibidad sa iba't ibang chat rooms nang walang bayad.",
+                    text = "Ang Ligtas at Pambansang Tambayan ng Kabataang Pilipino 🇵🇭",
                     fontSize = 12.sp,
                     color = Color(0xFF94A3B8),
                     lineHeight = 17.sp
@@ -124,13 +124,13 @@ fun TambayanWelcomeBanner(
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Icon(
                             imageVector = Icons.Default.RocketLaunch,
-                            contentDescription = "Buksan ang Chat Rooms",
+                            contentDescription = "Pumasok sa Tambayan",
                             tint = Color.White,
                             modifier = Modifier.size(16.dp)
                         )
                         Spacer(modifier = Modifier.width(8.dp))
                         Text(
-                            text = "Buksan ang Chat Rooms",
+                            text = "Pumasok sa Tambayan! 🚀",
                             fontSize = 13.sp,
                             fontWeight = FontWeight.Bold,
                             color = Color.White
@@ -146,7 +146,7 @@ fun TambayanWelcomeBanner(
 fun TambayanStatsGrid(
     modifier: Modifier = Modifier,
     activeRoomsCount: String = "7 Rooms",
-    onlineStudentsCount: String = "1,428",
+    onlineStudentsCount: String = "4,598",
     videoCallsCount: String = "34 Rooms",
     apkSharedCount: String = "520+"
 ) {
@@ -167,7 +167,7 @@ fun TambayanStatsGrid(
                 modifier = Modifier.weight(1f)
             )
             StatCard(
-                title = "Online Students",
+                title = "Online Tambayers",
                 stat = onlineStudentsCount,
                 subtitle = "Active ngayon",
                 icon = Icons.Default.People,

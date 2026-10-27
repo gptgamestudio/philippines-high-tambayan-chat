@@ -26,6 +26,7 @@ import androidx.compose.material.icons.filled.VerifiedUser
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -178,6 +179,15 @@ fun KidAdDialog(
                     textAlign = TextAlign.Center
                 )
 
+                // Ad Unit ID reference matching user AdMob setup
+                Text(
+                    text = "Ad Unit ID:\nca-app-pub-9786472984542330/7506482083",
+                    fontSize = 10.sp,
+                    fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace,
+                    color = Color(0xFF60A5FA),
+                    textAlign = TextAlign.Center
+                )
+
                 // Countdown Timer Box
                 Box(
                     modifier = Modifier
@@ -218,6 +228,25 @@ fun KidAdDialog(
                     color = TambayanGold,
                     trackColor = TambayanNavyElevated
                 )
+
+                // Close / Continue Button
+                Surface(
+                    onClick = onDismiss,
+                    shape = RoundedCornerShape(12.dp),
+                    color = Color(0xFF2563EB),
+                    modifier = Modifier
+                        .fillMaxWidth(0.9f)
+                        .testTag("btn_close_interstitial_ad")
+                ) {
+                    Text(
+                        text = "Ipasara ang Ad / Magpatuloy sa Chat",
+                        fontSize = 12.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = Color.White,
+                        textAlign = TextAlign.Center,
+                        modifier = Modifier.padding(vertical = 10.dp)
+                    )
+                }
 
                 Text(
                     text = "🔒 Safe & Secure Campus Environment • RA 10627 Compliant",

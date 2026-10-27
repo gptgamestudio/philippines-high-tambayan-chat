@@ -50,6 +50,9 @@ class AdManager(private val context: Context) {
         private const val TAG = "AdManager"
         // Official Google AdMob sample test ad unit IDs
         const val TEST_INTERSTITIAL_ID = "ca-app-pub-3940256099942544/1033173712"
+        // Production AdMob IDs from user configuration
+        const val PROD_INTERSTITIAL_ID = "ca-app-pub-9786472984542330/7506482083"
+        const val PROD_BANNER_ID = "ca-app-pub-9786472984542330/4596337589"
         private const val TWENTY_FOUR_HOURS_MS = 24 * 60 * 60 * 1000L
 
         @Volatile
@@ -167,9 +170,10 @@ class AdManager(private val context: Context) {
         if (!_state.value.isInterstitialEnabled || isEmulator()) return
         try {
             val adRequest = AdRequest.Builder().build()
+            val adUnitId = if (isEmulator()) TEST_INTERSTITIAL_ID else PROD_INTERSTITIAL_ID
             InterstitialAd.load(
                 context,
-                TEST_INTERSTITIAL_ID,
+                adUnitId,
                 adRequest,
                 object : InterstitialAdLoadCallback() {
                     override fun onAdLoaded(ad: InterstitialAd) {

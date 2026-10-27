@@ -156,11 +156,11 @@ fun MainMenuScreen(
             )
         }
 
-        // STATS GRID (7 Rooms, 1428 Online Students, 34 Video Calls, 520+ Files Shared)
+        // STATS GRID (7 Rooms, 4,598 Online Tambayers, 34 Video Calls, 520+ Files Shared)
         item {
             TambayanStatsGrid(
                 activeRoomsCount = "${rooms.size.coerceAtLeast(7)} Rooms",
-                onlineStudentsCount = "1,428",
+                onlineStudentsCount = "4,598",
                 videoCallsCount = "34 Rooms",
                 apkSharedCount = "520+"
             )
