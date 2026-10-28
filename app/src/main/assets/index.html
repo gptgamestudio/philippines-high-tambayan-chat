@@ -1,1201 +1,953 @@
 <!DOCTYPE html>
 <html lang="tl">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <title>Philippines High School Tambayan & AI Online Students</title>
-  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-  <style>
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-    }
-
-    body {
-      background-color: #121824;
-      color: #ffffff;
-      height: 100vh;
-      display: flex;
-      flex-direction: column;
-      overflow: hidden;
-    }
-
-    /* Top Navigation Header */
-    .top-bar {
-      background-color: #182030;
-      padding: 10px 14px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      border-bottom: 1px solid #2a3447;
-      z-index: 10;
-    }
-
-    .top-left-actions {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-
-    .btn-dashboard {
-      background-color: #0d6efd;
-      color: white;
-      border: none;
-      padding: 8px 14px;
-      border-radius: 8px;
-      font-weight: 600;
-      font-size: 0.88rem;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      cursor: pointer;
-      text-decoration: none;
-      transition: background-color 0.15s ease;
-    }
-    .btn-dashboard:hover {
-      background-color: #0b5ed7;
-    }
-
-    .room-header-title {
-      font-size: 0.9rem;
-      font-weight: bold;
-      color: #00ff88;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-    }
-
-    .user-profile {
-      background-color: #263248;
-      padding: 6px 12px;
-      border-radius: 20px;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      font-size: 0.82rem;
-      font-weight: 600;
-      border: 1px solid #3b4d68;
-      cursor: pointer;
-    }
-
-    .btn-owner-badge {
-      background: linear-gradient(135deg, #78350f, #b45309);
-      color: #fef3c7;
-      border: 1px solid #f59e0b;
-      padding: 6px 10px;
-      border-radius: 12px;
-      font-size: 0.75rem;
-      font-weight: bold;
-      display: none;
-      align-items: center;
-      gap: 4px;
-      cursor: pointer;
-    }
-
-    /* Channel Navigation Tabs */
-    .channel-nav {
-      background-color: #161f2e;
-      display: flex;
-      padding: 8px;
-      gap: 6px;
-      overflow-x: auto;
-      border-bottom: 1px solid #253044;
-    }
-
-    .tab-btn {
-      background-color: #222d40;
-      color: #94a3b8;
-      border: 1px solid #2e3c54;
-      padding: 8px 14px;
-      border-radius: 8px;
-      font-size: 0.8rem;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      white-space: nowrap;
-      transition: all 0.15s ease;
-    }
-
-    .tab-btn.active {
-      background-color: #2563eb;
-      color: #ffffff;
-      border-color: #3b82f6;
-    }
-
-    /* Call Toolbar */
-    .call-toolbar {
-      background-color: #1a2436;
-      padding: 8px 14px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      border-bottom: 1px solid #2a3447;
-    }
-
-    .call-btn-group {
-      display: flex;
-      gap: 8px;
-    }
-
-    .btn-call {
-      background-color: #10b981;
-      color: white;
-      border: none;
-      padding: 6px 12px;
-      border-radius: 6px;
-      font-size: 0.8rem;
-      font-weight: 600;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      transition: opacity 0.15s ease;
-    }
-    .btn-call:hover {
-      opacity: 0.9;
-    }
-
-    .btn-call-audio {
-      background-color: #0ea5e9;
-    }
-
-    /* Campus FM Music Bar */
-    .music-bar {
-      background-color: #141b2a;
-      border-bottom: 1px solid #253044;
-      padding: 6px 14px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 8px;
-      font-size: 0.78rem;
-    }
-
-    .music-info {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      color: #38bdf8;
-      overflow: hidden;
-      white-space: nowrap;
-      text-overflow: ellipsis;
-    }
-
-    .music-badge {
-      background: rgba(245, 158, 11, 0.15);
-      color: #fbbf24;
-      padding: 2px 6px;
-      border-radius: 4px;
-      font-size: 0.68rem;
-      font-weight: bold;
-      border: 1px solid rgba(245, 158, 11, 0.3);
-    }
-
-    .music-controls {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-    }
-
-    .music-btn {
-      background-color: #222d40;
-      color: #e2e8f0;
-      border: 1px solid #334155;
-      padding: 4px 8px;
-      border-radius: 6px;
-      font-size: 0.72rem;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      gap: 4px;
-    }
-    .music-btn:hover {
-      background-color: #2e3c54;
-    }
-
-    /* AI Student Selector Bar for Private Chat */
-    .ai-selector-bar {
-      background-color: #0f172a;
-      padding: 6px 12px;
-      display: none;
-      align-items: center;
-      gap: 8px;
-      overflow-x: auto;
-      border-bottom: 1px solid #1e293b;
-    }
-
-    .ai-chip {
-      background-color: #1e293b;
-      color: #38bdf8;
-      border: 1px solid #334155;
-      padding: 4px 10px;
-      border-radius: 15px;
-      font-size: 0.75rem;
-      cursor: pointer;
-      white-space: nowrap;
-      display: flex;
-      align-items: center;
-      gap: 4px;
-      transition: all 0.15s ease;
-    }
-
-    .ai-chip.active {
-      background-color: #0284c7;
-      color: white;
-      border-color: #38bdf8;
-    }
-
-    /* Main Chat Area */
-    .chat-container {
-      flex: 1;
-      padding: 14px;
-      overflow-y: auto;
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-      background-color: #121824;
-      scroll-behavior: smooth;
-    }
-
-    .message {
-      max-width: 82%;
-      padding: 10px 14px;
-      border-radius: 12px;
-      font-size: 0.88rem;
-      line-height: 1.4;
-      word-wrap: break-word;
-    }
-
-    .message.received {
-      background-color: #26334a;
-      align-self: flex-start;
-      border-bottom-left-radius: 2px;
-    }
-
-    .message.ai-student {
-      background-color: #1e1b4b;
-      border: 1px solid #3730a3;
-      align-self: flex-start;
-      border-bottom-left-radius: 2px;
-    }
-
-    .message.sent {
-      background-color: #1d4ed8;
-      color: #fff;
-      align-self: flex-end;
-      border-bottom-right-radius: 2px;
-    }
-
-    .msg-sender {
-      font-size: 0.7rem;
-      color: #94a3b8;
-      margin-bottom: 4px;
-      font-weight: 600;
-    }
-
-    /* Campus Notice Banner */
-    .safety-notice {
-      background-color: #1e1b4b;
-      border-top: 1px solid #312e81;
-      color: #a5b4fc;
-      padding: 8px 16px;
-      font-size: 0.8rem;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-
-    /* Document Toolbar */
-    .doc-toolbar {
-      background-color: #182030;
-      padding: 8px 14px;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      border-top: 1px solid #2a3447;
-    }
-
-    .doc-toolbar-label {
-      font-size: 0.78rem;
-      color: #94a3b8;
-      margin-right: auto;
-    }
-
-    .btn-doc {
-      background-color: #27354a;
-      color: #e2e8f0;
-      border: 1px solid #3b4d68;
-      padding: 6px 12px;
-      border-radius: 6px;
-      font-size: 0.78rem;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      transition: background-color 0.15s ease;
-    }
-    .btn-doc:hover {
-      background-color: #33445e;
-      color: #ffffff;
-    }
-
-    /* Chat Input Bar */
-    .chat-input-area {
-      background-color: #182030;
-      padding: 10px;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      border-top: 1px solid #2a3447;
-    }
-
-    .chat-input {
-      flex: 1;
-      background-color: #1e293b;
-      border: 1px solid #334155;
-      color: #ffffff;
-      padding: 10px 14px;
-      border-radius: 20px;
-      font-size: 0.9rem;
-      outline: none;
-    }
-    .chat-input::placeholder {
-      color: #64748b;
-    }
-    .chat-input:focus {
-      border-color: #3b82f6;
-    }
-
-    .btn-send {
-      background-color: #2563eb;
-      color: white;
-      border: none;
-      width: 40px;
-      height: 40px;
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      cursor: pointer;
-      transition: background-color 0.15s ease;
-    }
-    .btn-send:hover {
-      background-color: #1d4ed8;
-    }
-
-    /* Call Modal Overlay */
-    .call-modal {
-      display: none;
-      position: fixed;
-      top: 0; left: 0; width: 100%; height: 100%;
-      background: rgba(0,0,0,0.92);
-      backdrop-filter: blur(8px);
-      z-index: 100;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-    }
-
-    .call-screen {
-      width: 90%;
-      max-width: 460px;
-      min-height: 320px;
-      background: linear-gradient(135deg, #1e293b, #0f172a);
-      border-radius: 16px;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      position: relative;
-      border: 2px solid #3b82f6;
-      box-shadow: 0 20px 40px rgba(0,0,0,0.7);
-      padding: 24px;
-      text-align: center;
-    }
-
-    .call-avatar-pulse {
-      position: relative;
-      margin-bottom: 16px;
-    }
-
-    .call-avatar-pulse::after {
-      content: '';
-      position: absolute;
-      inset: -10px;
-      border-radius: 50%;
-      border: 2px solid #38bdf8;
-      animation: pulse 1.5s infinite;
-    }
-
-    @keyframes pulse {
-      0% { transform: scale(0.95); opacity: 1; }
-      100% { transform: scale(1.3); opacity: 0; }
-    }
-
-    .call-action-btns {
-      display: flex;
-      gap: 16px;
-      margin-top: 24px;
-    }
-
-    .btn-call-tool {
-      background: #334155;
-      color: white;
-      border: none;
-      width: 46px;
-      height: 46px;
-      border-radius: 50%;
-      cursor: pointer;
-      font-size: 1rem;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-
-    .btn-end-call {
-      background-color: #ef4444;
-      color: white;
-      border: none;
-      padding: 12px 28px;
-      border-radius: 30px;
-      font-weight: bold;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      box-shadow: 0 4px 12px rgba(239, 68, 68, 0.4);
-      transition: background-color 0.15s ease;
-    }
-    .btn-end-call:hover {
-      background-color: #dc2626;
-    }
-
-    /* AdMob Banner */
-    .admob-banner {
-      background-color: #0f172a;
-      border-top: 1px solid #1e293b;
-      padding: 6px;
-      text-align: center;
-      font-size: 0.7rem;
-      color: #64748b;
-    }
-
-    /* Student Profile Modal */
-    .modal-overlay {
-      position: fixed;
-      inset: 0;
-      background: rgba(0, 0, 0, 0.85);
-      backdrop-filter: blur(4px);
-      display: none;
-      align-items: center;
-      justify-content: center;
-      z-index: 100;
-      padding: 16px;
-    }
-
-    .modal-card {
-      background: #182030;
-      border: 1px solid #2a3447;
-      border-radius: 16px;
-      max-width: 440px;
-      width: 100%;
-      padding: 20px;
-      box-shadow: 0 10px 25px rgba(0,0,0,0.5);
-    }
-  </style>
-</head>
-<body>
-
-  <!-- Top Navigation Header -->
-  <div class="top-bar">
-    <div class="top-left-actions">
-      <button class="btn-dashboard" onclick="location.href='dashboard.html'">
-        <i class="fa-solid fa-house"></i> Student Dash
-      </button>
-      <div style="font-size: 0.8rem; color: #4ade80; display: flex; align-items: center; gap: 6px;">
-        <i class="fa-solid fa-circle" style="font-size:0.6rem; color:#4ade80; animation: pulse 2s infinite;"></i> 
-        <span>8 AI Students Online</span>
-      </div>
-    </div>
-    
-    <div style="display: flex; align-items: center; gap: 8px;">
-      <!-- Hidden Owner Portal Button (Benjie Landingin only) -->
-      <button id="btnOwnerPortal" class="btn-owner-badge" onclick="openAdminModal()">
-        👑 Owner
-      </button>
-
-      <div class="user-profile" id="userProfileBadge" onclick="openProfileModal()">
-        <i class="fa-solid fa-user-ninja"></i> <span id="profileNameDisplay">benjie1977</span>
-      </div>
-    </div>
-  </div>
-
-  <!-- Channel Navigation Tabs -->
-  <div class="channel-nav">
-    <button class="tab-btn active" onclick="switchTab('public', '🇵🇭 Public Tambayan Lounge', this)">
-      🇵🇭 Public Tambayan
-    </button>
-    <button class="tab-btn" onclick="switchTab('private', '🔒 1-on-1 Private Messenger', this)">
-      🔒 1-on-1 Private Chat
-    </button>
-  </div>
-
-  <!-- AI Student Selector Bar (for 1-on-1 Private Messenger) -->
-  <div class="ai-selector-bar" id="aiSelectorBar">
-    <span style="font-size:0.75rem; color:#94a3b8; font-weight: bold;">Pumili ng AI Student:</span>
-    <div class="ai-chip active" onclick="selectAIStudent('100', 'Student #100 (Alex)', this)">🎓 Student #100</div>
-    <div class="ai-chip" onclick="selectAIStudent('92', 'Student #92 (Bea)', this)">🎓 Student #92</div>
-    <div class="ai-chip" onclick="selectAIStudent('36', 'Student #36 (Chris)', this)">🎓 Student #36</div>
-    <div class="ai-chip" onclick="selectAIStudent('50', 'Student #50 (Dianne)', this)">🎓 Student #50</div>
-    <div class="ai-chip" onclick="selectAIStudent('48', 'Student #48 (Ethan)', this)">🎓 Student #48</div>
-    <div class="ai-chip" onclick="selectAIStudent('79', 'Student #79 (Fiona)', this)">🎓 Student #79</div>
-    <div class="ai-chip" onclick="selectAIStudent('84', 'Student #84 (Gelo)', this)">🎓 Student #84</div>
-    <div class="ai-chip" onclick="selectAIStudent('66', 'Student #66 (Hannah)', this)">🎓 Student #66</div>
-  </div>
-
-  <!-- Video & Audio Call Bar -->
-  <div class="call-toolbar">
-    <span class="room-header-title" id="roomTitle">🇵🇭 Public Tambayan Lounge</span>
-    <div class="call-btn-group">
-      <button class="btn-call btn-call-audio" onclick="startCall('Audio')">
-        <i class="fa-solid fa-phone"></i> Audio Call
-      </button>
-      <button class="btn-call" onclick="startCall('Video')">
-        <i class="fa-solid fa-video"></i> Video Call
-      </button>
-    </div>
-  </div>
-
-  <!-- Campus FM Music Player Bar (Background songs across all rooms) -->
-  <div class="music-bar">
-    <div class="music-info">
-      <span class="music-badge">Campus FM</span>
-      <i class="fa-solid fa-music"></i>
-      <span id="musicTitleText">Pinoy Barkada Jam (Acoustic Friendly Tunes)</span>
-    </div>
-    <div class="music-controls">
-      <button class="music-btn" id="btnPrevMusic" onclick="prevMusicTrack()"><i class="fa-solid fa-backward-step"></i></button>
-      <button class="music-btn" id="btnPlayPauseMusic" onclick="toggleMusicPlayback()"><i id="musicIcon" class="fa-solid fa-play"></i> <span id="musicBtnLabel">Play</span></button>
-      <button class="music-btn" id="btnNextMusic" onclick="nextMusicTrack()"><i class="fa-solid fa-forward-step"></i></button>
-    </div>
-  </div>
-
-  <!-- Main Chat Container -->
-  <div class="chat-container" id="chatBox">
-    <div class="message received">
-      <div class="msg-sender">System</div>
-      Welcome! Naka-online ngayon sina <strong>Student #100, #92, #36, #50, #48, #79, #84, at #66</strong> para makipag-usap sa iyo nang parang totoong tao!
-    </div>
-  </div>
-
-  <!-- Campus Safety Notice -->
-  <div class="safety-notice">
-    <i class="fa-solid fa-shield-halved"></i>
-    <span><strong>CAMPUS SAFETY NOTICE:</strong> Ligtas at maayos na pakikipag-usap para sa lahat.</span>
-  </div>
-
-  <!-- Document Action Tools (Save, Share, Download) -->
-  <div class="doc-toolbar">
-    <span class="doc-toolbar-label"><i class="fa-solid fa-folder-open"></i> Docs Tools:</span>
-    <button class="btn-doc" onclick="saveDoc()">
-      <i class="fa-solid fa-bookmark"></i> Save
-    </button>
-    <button class="btn-doc" onclick="shareDoc()">
-      <i class="fa-solid fa-share-nodes"></i> Share
-    </button>
-    <button class="btn-doc" onclick="downloadDoc()">
-      <i class="fa-solid fa-download"></i> Download
-    </button>
-  </div>
-
-  <!-- Bottom Chat Input Section -->
-  <div class="chat-input-area">
-    <input type="text" id="userInput" class="chat-input" placeholder="chat txt here..." onkeypress="handleKeyPress(event)">
-    <button class="btn-send" onclick="sendMessage()">
-      <i class="fa-solid fa-paper-plane"></i>
-    </button>
-  </div>
-
-  <!-- AdMob Banner -->
-  <div class="admob-banner">
-    ADVERTISEMENT • Google AdMob Test Banner • Fixed Sponsor
-  </div>
-
-  <!-- Video/Audio Call Modal Window -->
-  <div class="call-modal" id="callModal">
-    <div class="call-screen">
-      <div class="call-avatar-pulse">
-        <i class="fa-solid fa-user-graduate" style="font-size: 4rem; color: #38bdf8;"></i>
-      </div>
-      <div style="font-size: 1.2rem; font-weight: bold; color: #e2e8f0;" id="callTargetName">Student #100</div>
-      <div style="font-size: 0.85rem; color: #4ade80; margin-top: 6px;" id="callStatusText">Connecting Call...</div>
-      <div style="font-size: 0.9rem; font-family: monospace; color: #94a3b8; margin-top: 8px;" id="callTimer">00:00</div>
-
-      <div class="call-action-btns">
-        <button class="btn-call-tool" onclick="toggleMuteMic(this)"><i class="fa-solid fa-microphone"></i></button>
-        <button class="btn-call-tool" onclick="toggleCamera(this)"><i class="fa-solid fa-video"></i></button>
-        <button class="btn-end-call" onclick="endCall()">
-          <i class="fa-solid fa-phone-slash"></i> End Call
-        </button>
-      </div>
-    </div>
-  </div>
-
-  <!-- Student Alias Modal -->
-  <div id="profileModal" class="modal-overlay">
-    <div class="modal-card">
-      <h3 style="margin-bottom: 8px;"><i class="fa-solid fa-id-card"></i> Student Alias & Profile</h3>
-      <p style="font-size: 0.8rem; color: #94a3b8; margin-bottom: 12px;">Palitan ang iyong alias sa Tambayan chat.</p>
-      <input type="text" id="aliasInput" style="width: 100%; background: #1e293b; border: 1px solid #334155; color: white; padding: 10px; border-radius: 8px; font-size: 0.9rem;" placeholder="Hal. benjie1977, Juan_STEM, Mary_G10">
-      <button style="background: #2563eb; color: white; border: none; padding: 10px 16px; border-radius: 8px; font-weight: bold; width: 100%; cursor: pointer; margin-top: 12px;" onclick="saveProfileAlias()">I-save ang Profile</button>
-      <button style="width: 100%; background: transparent; border: 1px solid #334155; color: #94a3b8; padding: 8px; border-radius: 8px; margin-top: 8px; cursor: pointer;" onclick="closeProfileModal()">Isara</button>
-    </div>
-  </div>
-
-  <!-- Admin Gate Modal (For Benjie Landingin ONLY) -->
-  <div id="adminModal" class="modal-overlay">
-    <div class="modal-card">
-      <h3 style="margin-bottom: 6px; color: #f59e0b;"><i class="fa-solid fa-shield-halved"></i> Owner Dashboard Portal</h3>
-      <p style="font-size: 0.78rem; color: #94a3b8; margin-bottom: 12px;">Eksklusibo kay Benjie Landingin (insularleann@gmail.com). I-enter ang security passcode.</p>
-      
-      <div id="adminGateBody">
-        <input type="password" id="adminPinInput" style="width: 100%; background: #1e293b; border: 1px solid #334155; color: white; padding: 10px; border-radius: 8px; font-size: 0.9rem;" placeholder="Enter Passcode (100877)">
-        <p id="adminErrorText" style="color: #ef4444; font-size: 0.75rem; margin-top: 6px; display: none;">ACCESS DENIED! Hindi tugma ang passcode o unauthorized account.</p>
-        <button style="background: #d97706; color: white; border: none; padding: 10px; border-radius: 8px; font-weight: bold; width: 100%; margin-top: 10px; cursor: pointer;" onclick="verifyAdminPasscode()">I-verify ang Owner Passcode</button>
-      </div>
-
-      <div id="adminControlsBody" style="display: none; margin-top: 10px; font-size: 0.82rem;">
-        <div style="background: #0f172a; padding: 10px; border-radius: 8px; border: 1px solid #334155; margin-bottom: 8px;">
-          <h4 style="color: #38bdf8; margin-bottom: 4px;">🚀 APK Distribution & Update</h4>
-          <p style="font-size: 0.72rem; color: #94a3b8; margin-bottom: 6px;">Link sa download ng opisyal na Android APK:</p>
-          <a href="/philippines-high-tambayan.apk" download style="display: inline-block; background: #10b981; color: black; font-weight: bold; padding: 6px 12px; border-radius: 6px; text-decoration: none; font-size: 0.78rem;">
-            <i class="fa-solid fa-download"></i> I-download ang APK
-          </a>
-        </div>
-        <div style="background: #0f172a; padding: 10px; border-radius: 8px; border: 1px solid #334155;">
-          <h4 style="color: #f87171; margin-bottom: 4px;">🧹 Moderation Tools</h4>
-          <button style="background: #b91c1c; color: white; border: none; padding: 6px 10px; border-radius: 6px; font-size: 0.75rem; cursor: pointer;" onclick="clearCurrentRoomChats()">
-            Burahin ang Messages sa Kwarto
-          </button>
-        </div>
-      </div>
-
-      <button style="width: 100%; background: transparent; border: 1px solid #334155; color: #94a3b8; padding: 8px; border-radius: 8px; margin-top: 10px; cursor: pointer;" onclick="closeAdminModal()">Bumalik</button>
-    </div>
-  </div>
-
-  <!-- Firebase Modular SDK Script -->
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js";
-    import { 
-      getFirestore, 
-      collection, 
-      addDoc, 
-      onSnapshot, 
-      query, 
-      orderBy, 
-      limit, 
-      serverTimestamp,
-      getDocs,
-      deleteDoc
-    } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
-
-    const firebaseConfig = {
-      apiKey: "AIzaSyBlOM74gcxt_1n8pYVA48GzXijTdYBMCXk",
-      authDomain: "gen-lang-client-0971067656.firebaseapp.com",
-      projectId: "gen-lang-client-0971067656",
-      storageBucket: "gen-lang-client-0971067656.firebasestorage.app",
-      messagingSenderId: "482355621819",
-      appId: "1:482355621819:android:cc8fa750eb5782bc22de9e"
-    };
-
-    let app, db;
-    try {
-      app = initializeApp(firebaseConfig);
-      db = getFirestore(app);
-    } catch(err) {
-      console.warn("Firestore init notice:", err);
-    }
-
-    window.db = db;
-    window.addDoc = addDoc;
-    window.collection = collection;
-    window.serverTimestamp = serverTimestamp;
-
-    // Attach listener for real-time messages
-    if (db) {
-      try {
-        const msgsRef = collection(db, 'messages');
-        const q = query(msgsRef, orderBy('timestamp', 'asc'), limit(80));
-        onSnapshot(q, (snapshot) => {
-          if (window.activeTab === 'public') {
-            // sync with public messages
-            snapshot.docChanges().forEach((change) => {
-              if (change.type === 'added') {
-                const data = change.doc.data();
-                if (data.senderName !== window.localUser && data.roomId === 'public') {
-                  const chatBox = document.getElementById('chatBox');
-                  const msgDiv = document.createElement('div');
-                  msgDiv.className = data.isAi ? 'message ai-student' : 'message received';
-                  msgDiv.innerHTML = `<div class="msg-sender">${escapeHtml(data.senderName || 'Estudyante')}</div>${escapeHtml(data.messageText || '')}`;
-                  chatBox.appendChild(msgDiv);
-                  chatBox.scrollTop = chatBox.scrollHeight;
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Philippines High School Tambayan - Pro Student Chat & AdMob Hub</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        tambay: {
+                            navy: '#0B1120',
+                            card: '#0F172A',
+                            border: '#1E293B',
+                            blue: '#0D6EFD',
+                            gold: '#F59E0B'
+                        }
+                    }
                 }
-              }
-            });
-          }
-        });
-      } catch(e) {
-        console.warn("Listener error:", e);
-      }
-    }
+            }
+        }
+    </script>
+    <!-- FontAwesome 6 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google AdMob Script tag -->
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9786472984542330" crossorigin="anonymous"></script>
+    <style>
+        * {
+            -webkit-tap-highlight-color: transparent;
+            box-sizing: border-box;
+        }
+        /* Custom scrollbar styling */
+        .scrollbar-none::-webkit-scrollbar {
+            display: none;
+        }
+        .scrollbar-none {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+        .scrollbar-thin::-webkit-scrollbar {
+            width: 4px;
+        }
+        .scrollbar-thin::-webkit-scrollbar-thumb {
+            background-color: #334155;
+            border-radius: 4px;
+        }
+        /* Pulse animations */
+        @keyframes liveGlow {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.4; transform: scale(0.92); }
+        }
+        .animate-live-glow {
+            animation: liveGlow 1.8s infinite ease-in-out;
+        }
+        /* Sparkle gradient star */
+        .sparkle-icon {
+            background: linear-gradient(135deg, #38bdf8 0%, #818cf8 40%, #f472b6 75%, #fbbf24 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+    </style>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen font-sans flex flex-col justify-between selection:bg-blue-600 selection:text-white">
 
-    function escapeHtml(str) {
-      return (str || '').replace(/[&<>"']/g, function(m) {
-        return ({
-          '&': '&amp;',
-          '<': '&lt;',
-          '>': '&gt;',
-          '"': '&quot;',
-          "'": '&#39;'
-        })[m];
-      });
-    }
-
-    window.clearCurrentRoomChats = async function() {
-      if (!confirm("Sigurado ka bang nais burahin ang chat messages sa kwartong ito?")) return;
-      if (!db) return;
-      try {
-        const msgsRef = collection(db, 'messages');
-        const q = query(msgsRef);
-        const snapshot = await getDocs(q);
-        snapshot.forEach(async (d) => {
-          await deleteDoc(d.ref);
-        });
-        alert("Nalinis na ang messages!");
-      } catch (e) {
-        alert("Error clearing chats: " + e.message);
-      }
-    };
-  </script>
-
-  <!-- Interactive Logic & AI Online Students -->
-  <script>
-    // AI Students Database List (Exact 8 Online Students)
-    const aiStudents = {
-      '100': { name: 'Student #100 (Alex)', personality: 'gamer', quote: 'Tara ML mamayang uwian!', strand: 'SHS TVL' },
-      '92':  { name: 'Student #92 (Bea)', personality: 'studious', quote: 'Tapos mo na ba reviewer sa Math?', strand: 'SHS STEM' },
-      '36':  { name: 'Student #36 (Chris)', personality: 'funny', quote: 'Haha sana all walang pasok bukas!', strand: 'Grade 10' },
-      '50':  { name: 'Student #50 (Dianne)', personality: 'music', quote: 'LSS ako sa bagong BINI at OPM acoustic chords!', strand: 'SHS HUMSS' },
-      '48':  { name: 'Student #48 (Ethan)', personality: 'friendly', quote: 'Kamusta mate! Libre kita ng kwek-kwek mamaya.', strand: 'SHS ABM' },
-      '79':  { name: 'Student #79 (Fiona)', personality: 'chismis', quote: 'May chismis ako sa section 2, alam mo na ba?', strand: 'Grade 9' },
-      '84':  { name: 'Student #84 (Gelo)', personality: 'sports', quote: 'May practice kami sa gym mamayang 4pm!', strand: 'Grade 8' },
-      '66':  { name: 'Student #66 (Hannah)', personality: 'chill', quote: 'Chill lang muna habang break time.', strand: 'Grade 7' }
-    };
-
-    window.activeTab = 'public';
-    window.selectedAI = '100';
-    window.localUser = localStorage.getItem('tambayan_alias') || 'benjie1977';
-
-    function switchTab(tab, title, element) {
-      window.activeTab = tab;
-      document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
-      element.classList.add('active');
-
-      document.getElementById('roomTitle').innerText = title;
-      document.getElementById('aiSelectorBar').style.display = (tab === 'private') ? 'flex' : 'none';
-
-      const chatBox = document.getElementById('chatBox');
-      if (tab === 'public') {
-        chatBox.innerHTML = `
-          <div class="message received">
-            <div class="msg-sender">System</div>
-            Nasa <strong>Public Tambayan Lounge</strong> ka na. Kasama mo rito ang lahat ng 8 AI online students!
-          </div>
-        `;
-      } else {
-        chatBox.innerHTML = `
-          <div class="message received">
-            <div class="msg-sender">System</div>
-            Nasa 1-on-1 Private Chat ka na kasama si <strong>${aiStudents[window.selectedAI].name}</strong>.
-          </div>
-        `;
-      }
-    }
-
-    function selectAIStudent(id, name, chip) {
-      window.selectedAI = id;
-      document.querySelectorAll('.ai-chip').forEach(c => c.classList.remove('active'));
-      chip.classList.add('active');
-
-      const chatBox = document.getElementById('chatBox');
-      chatBox.innerHTML = `
-        <div class="message received">
-          <div class="msg-sender">System</div>
-          Naka-connect ka na sa private chat ni <strong>${name}</strong>.
+    <!-- ========================================== -->
+    <!-- 1. TOP NAVIGATION & DASHBOARD SWITCHER     -->
+    <!-- ========================================== -->
+    <header class="bg-slate-900/95 backdrop-blur-md border-b border-slate-800 px-3 sm:px-4 py-2.5 sticky top-0 z-50">
+        <!-- Top row: Back arrow, Status, More menu -->
+        <div class="flex items-center justify-between pb-2">
+            <div class="flex items-center space-x-2">
+                <button onclick="goBack()" class="w-8 h-8 rounded-full bg-slate-800 hover:bg-slate-700 flex items-center justify-center text-slate-300 transition text-sm">
+                    <i class="fa-solid fa-chevron-left"></i>
+                </button>
+                <div class="flex items-center space-x-2">
+                    <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                    <span class="text-xs font-semibold text-slate-200">Campus Hub PH</span>
+                </div>
+            </div>
+            
+            <div class="flex items-center space-x-2">
+                <span class="text-[10px] bg-blue-500/20 text-blue-400 font-bold px-2 py-0.5 rounded-full border border-blue-500/30">RA 10627 Safe</span>
+                <button onclick="toggleMoreMenu()" class="w-8 h-8 rounded-full bg-slate-800 hover:bg-slate-700 flex items-center justify-center text-slate-300 transition text-sm">
+                    <i class="fa-solid fa-ellipsis"></i>
+                </button>
+            </div>
         </div>
-      `;
-    }
 
-    function sendMessage() {
-      const input = document.getElementById('userInput');
-      const text = input.value.trim();
-      if (text === "") return;
+        <!-- Switcher Buttons Row: [Student Dash] [Main Dashboard] [😎 benjie1978] -->
+        <div class="flex items-center space-x-2 overflow-x-auto scrollbar-none pt-1">
+            <!-- Student Dash Button -->
+            <button onclick="switchView('studentDash')" id="btnStudentDash" class="px-3.5 py-2 rounded-xl text-xs font-bold bg-blue-600 text-white shadow-md shadow-blue-500/30 transition flex items-center space-x-1.5 whitespace-nowrap active:scale-95">
+                <i class="fa-solid fa-graduation-cap text-sm"></i>
+                <span>Student Dash</span>
+            </button>
 
-      const chatBox = document.getElementById('chatBox');
+            <!-- Main Dashboard Button -->
+            <button onclick="switchView('mainDashboard')" id="btnMainDash" class="px-3.5 py-2 rounded-xl text-xs font-semibold bg-slate-800 text-slate-300 hover:bg-slate-700 transition flex items-center space-x-1.5 whitespace-nowrap active:scale-95">
+                <i class="fa-solid fa-gauge-high text-sm"></i>
+                <span>Main Dashboard</span>
+            </button>
 
-      // Add user message
-      const userMsg = document.createElement('div');
-      userMsg.className = 'message sent';
-      userMsg.innerHTML = `<div class="msg-sender">${escapeHtml(window.localUser)}</div>${escapeHtml(text)}`;
-      chatBox.appendChild(userMsg);
+            <!-- User Info Pill -->
+            <div class="ml-auto px-3 py-1.5 rounded-xl bg-slate-800/90 border border-slate-700/60 flex items-center space-x-2 whitespace-nowrap">
+                <span class="text-base">😎</span>
+                <div class="text-left">
+                    <div class="text-xs font-bold text-white leading-none">benjie1978</div>
+                    <div class="text-[9px] text-amber-400 font-semibold leading-none mt-0.5">Grade 10 Completer</div>
+                </div>
+            </div>
+        </div>
+    </header>
 
-      input.value = "";
-      chatBox.scrollTop = chatBox.scrollHeight;
+    <!-- ========================================== -->
+    <!-- MAIN CONTAINER                             -->
+    <!-- ========================================== -->
+    <main class="flex-1 w-full max-w-5xl mx-auto px-3 sm:px-4 py-3 pb-36">
 
-      // Save to Firebase
-      if (window.db && window.addDoc && window.collection) {
-        try {
-          window.addDoc(window.collection(window.db, 'messages'), {
-            roomId: window.activeTab === 'public' ? 'public' : 'private_' + window.selectedAI,
-            senderName: window.localUser,
-            senderAvatar: '🎒',
-            messageText: text,
-            isAi: false,
-            timestamp: window.serverTimestamp ? window.serverTimestamp() : new Date(),
-            createdAt: new Date().toISOString()
-          });
-        } catch(e) {
-          console.warn("Firestore write err:", e);
-        }
-      }
+        <!-- ========================================== -->
+        <!-- VIEW 1: MAIN DASHBOARD                     -->
+        <!-- ========================================== -->
+        <section id="mainDashboard" class="hidden space-y-4">
+            
+            <!-- Hero Welcome Gradient Banner -->
+            <div class="bg-gradient-to-r from-blue-900/50 via-slate-900 to-indigo-950/60 border border-slate-800 rounded-2xl p-4 sm:p-5 shadow-xl relative overflow-hidden">
+                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+                    <div>
+                        <span class="bg-blue-500/20 text-blue-400 text-[11px] px-2.5 py-1 rounded-full font-semibold border border-blue-500/30">
+                            100% Libreng Chat Tambayan
+                        </span>
+                        <h2 class="text-xl sm:text-2xl font-black text-white mt-2">
+                            Philippines High School Tambayan Chat 🔥
+                        </h2>
+                        <p class="text-slate-400 text-xs mt-1">
+                            Ang Ligtas at Pambansang Tambayan ng Kabataang Pilipino 🇵🇭
+                        </p>
+                    </div>
+                    <button onclick="switchView('studentDash')" class="w-full sm:w-auto px-4 py-2.5 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-bold rounded-xl shadow-lg shadow-blue-600/30 transition text-xs flex items-center justify-center space-x-2 active:scale-95">
+                        <i class="fa-solid fa-rocket text-sm"></i>
+                        <span>Pumasok sa Tambayan! 🚀</span>
+                    </button>
+                </div>
+            </div>
 
-      // Trigger AI Online Student human-like response
-      setTimeout(() => {
-        const aiMsg = document.createElement('div');
-        aiMsg.className = 'message ai-student';
-        
-        let responderId = (window.activeTab === 'private') ? window.selectedAI : getRandomAIKey();
-        let responder = aiStudents[responderId];
-        let responseText = generateHumanLikeResponse(text, responderId);
+            <!-- 4 Stats Cards Grid -->
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-2.5 sm:gap-3">
+                <!-- Stat 1 -->
+                <div class="bg-slate-900/85 border border-slate-800 p-3 rounded-2xl">
+                    <div class="text-blue-400 text-xs font-semibold flex items-center justify-between">
+                        <span>Aktibong Rooms</span>
+                        <i class="fa-solid fa-door-open"></i>
+                    </div>
+                    <div class="text-xl sm:text-2xl font-black mt-1.5 text-white">7 Rooms</div>
+                    <div class="text-[10px] text-slate-400 mt-0.5">Lahat online & libre</div>
+                </div>
+                <!-- Stat 2 -->
+                <div class="bg-slate-900/85 border border-slate-800 p-3 rounded-2xl">
+                    <div class="text-emerald-400 text-xs font-semibold flex items-center justify-between">
+                        <span>Online Tambayers</span>
+                        <i class="fa-solid fa-users"></i>
+                    </div>
+                    <div class="text-xl sm:text-2xl font-black mt-1.5 text-white">4,598</div>
+                    <div class="text-[10px] text-emerald-400 mt-0.5">Active ngayon</div>
+                </div>
+                <!-- Stat 3 -->
+                <div class="bg-slate-900/85 border border-slate-800 p-3 rounded-2xl">
+                    <div class="text-amber-400 text-xs font-semibold flex items-center justify-between">
+                        <span>Video Calls</span>
+                        <i class="fa-solid fa-video"></i>
+                    </div>
+                    <div class="text-xl sm:text-2xl font-black mt-1.5 text-white">34 Rooms</div>
+                    <div class="text-[10px] text-slate-400 mt-0.5">Tuloy-tuloy ang aral</div>
+                </div>
+                <!-- Stat 4 -->
+                <div class="bg-slate-900/85 border border-slate-800 p-3 rounded-2xl">
+                    <div class="text-purple-400 text-xs font-semibold flex items-center justify-between">
+                        <span>Files / APK Shared</span>
+                        <i class="fa-solid fa-file-arrow-down"></i>
+                    </div>
+                    <div class="text-xl sm:text-2xl font-black mt-1.5 text-white">520+</div>
+                    <div class="text-[10px] text-purple-400 mt-0.5">Na-download na</div>
+                </div>
+            </div>
 
-        aiMsg.innerHTML = `<div class="msg-sender" style="color:#a7f3d0;"><i class="fa-solid fa-graduation-cap"></i> ${responder.name}</div>${responseText}`;
-        chatBox.appendChild(aiMsg);
-        chatBox.scrollTop = chatBox.scrollHeight;
+            <!-- 7 Active Chat Rooms Grid -->
+            <div>
+                <div class="flex items-center justify-between mb-2.5">
+                    <h3 class="text-sm font-bold text-white flex items-center">
+                        <i class="fa-solid fa-layer-group text-blue-500 mr-2"></i>
+                        Pumili ng Chat Room (7 Active Rooms)
+                    </h3>
+                    <span class="text-[10px] text-slate-400">Libre bawat room</span>
+                </div>
+                
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5 sm:gap-3" id="mainRoomGrid">
+                    <!-- Dynamic room cards populated via JS -->
+                </div>
+            </div>
 
-        // Save AI reply to Firebase
-        if (window.db && window.addDoc && window.collection) {
-          try {
-            window.addDoc(window.collection(window.db, 'messages'), {
-              roomId: window.activeTab === 'public' ? 'public' : 'private_' + window.selectedAI,
-              senderName: responder.name,
-              senderAvatar: '🎓',
-              messageText: responseText,
-              isAi: true,
-              timestamp: window.serverTimestamp ? window.serverTimestamp() : new Date(),
-              createdAt: new Date().toISOString()
-            });
-          } catch(e) {}
-        }
-      }, 1100);
-    }
+            <!-- Campus Safety & Policies notice -->
+            <div class="bg-slate-900/80 border border-slate-800 rounded-2xl p-3 flex items-center justify-between">
+                <div class="flex items-center space-x-2.5">
+                    <div class="w-8 h-8 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center text-sm font-bold">
+                        <i class="fa-solid fa-shield-halved"></i>
+                    </div>
+                    <div>
+                        <h4 class="text-xs font-bold text-white">Campus Safety & Anti-Bullying (RA 10627)</h4>
+                        <p class="text-[10px] text-slate-400">Zero-tolerance sa cyberbullying. May automated moderation filter.</p>
+                    </div>
+                </div>
+                <button onclick="alert('RA 10627 Campus Safety Policy: Ligtas at magalang na pakikipag-ugnayan ang ipinapatupad sa lahat ng chat rooms.')" class="px-2.5 py-1 bg-slate-800 hover:bg-slate-700 text-slate-200 text-[10px] rounded-lg font-semibold">
+                    Basahin
+                </button>
+            </div>
+        </section>
 
-    function getRandomAIKey() {
-      const keys = Object.keys(aiStudents);
-      return keys[Math.floor(Math.random() * keys.length)];
-    }
+        <!-- ========================================== -->
+        <!-- VIEW 2: PRO STUDENT CHATROOM & VIDEO CALL  -->
+        <!-- ========================================== -->
+        <section id="studentDash" class="space-y-3">
 
-    function generateHumanLikeResponse(text, aiId) {
-      const lower = text.toLowerCase();
-      const student = aiStudents[aiId];
+            <!-- Horizontal Room Switcher Tabs (7 Rooms) -->
+            <div class="bg-slate-900 p-2 rounded-2xl border border-slate-800 flex overflow-x-auto space-x-2 scrollbar-none" id="roomTabsContainer">
+                <!-- Populated dynamically via JS -->
+            </div>
 
-      if (lower.includes('kamusta') || lower.includes('hello') || lower.includes('hi') || lower.includes('uy')) {
-        const greetings = [
-          `Uy kamusta mate! Nag-aaral ka rin ba para sa exam? - ${student.quote}`,
-          `Hello ${window.localUser}! Tambay muna habang break time dito sa lounge.`,
-          `Uy hi mate! Sakto online ako. Ano pinagkakaabalahan mo ngayon?`,
-          `Kamusta mate! May homework ka ba diyan na kailangan ng help?`
+            <!-- VIDEO CALL GRID CARD (4 STUDENTS ACTIVE) -->
+            <div class="bg-slate-900 border border-slate-800 rounded-2xl p-3 sm:p-4 relative overflow-hidden shadow-2xl">
+                <!-- Video Grid Header -->
+                <div class="flex justify-between items-center mb-2.5">
+                    <div class="flex items-center space-x-2">
+                        <span class="w-3 h-3 bg-red-500 rounded-full animate-live-glow"></span>
+                        <span class="font-bold text-xs sm:text-sm text-white">Video Call Grid (4 Students Active)</span>
+                    </div>
+                    
+                    <div class="flex items-center space-x-1.5">
+                        <button onclick="togglePausePlay()" id="pauseBtn" class="w-7 h-7 rounded-lg bg-slate-800 hover:bg-slate-700 flex items-center justify-center text-slate-300 text-xs transition" title="Pause Stream">
+                            <i class="fa-solid fa-pause"></i>
+                        </button>
+                        <button onclick="toggleFullscreen()" class="w-7 h-7 rounded-lg bg-slate-800 hover:bg-slate-700 flex items-center justify-center text-slate-300 text-xs transition" title="Fullscreen">
+                            <i class="fa-solid fa-expand"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 2x2 Video Tile Grid matching User Screenshot -->
+                <div class="grid grid-cols-2 gap-2 sm:gap-2.5 bg-slate-950 rounded-xl p-2 border border-slate-800/80">
+                    
+                    <!-- Tile 1: You (benjie1978) -->
+                    <div class="relative bg-slate-900 rounded-lg p-2.5 flex flex-col justify-between h-28 sm:h-32 border border-slate-800 overflow-hidden">
+                        <!-- Top Badges -->
+                        <div class="flex justify-between items-center z-10">
+                            <span class="bg-blue-600 text-white text-[9px] font-bold px-1.5 py-0.5 rounded">You</span>
+                            <span class="bg-black/60 text-emerald-400 font-mono text-[9px] px-1.5 py-0.5 rounded">1080p</span>
+                        </div>
+                        <!-- Center Avatar -->
+                        <div class="my-auto text-center z-10">
+                            <div class="w-10 h-10 sm:w-12 sm:h-12 mx-auto rounded-full bg-blue-600/30 border-2 border-blue-400 flex items-center justify-center text-lg sm:text-xl shadow-lg shadow-blue-500/20">
+                                😎
+                            </div>
+                        </div>
+                        <!-- Bottom Info -->
+                        <div class="flex justify-between items-center z-10 text-[10px]">
+                            <span class="font-bold text-white truncate max-w-[65px]">benjie1978</span>
+                            <div class="flex items-center space-x-1 text-emerald-400 text-[10px]">
+                                <i id="userMicIcon" class="fa-solid fa-microphone"></i>
+                                <i id="userCamIcon" class="fa-solid fa-video"></i>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Tile 2: Maria_C (Grade 10) -->
+                    <div class="relative bg-slate-900 rounded-lg p-2.5 flex flex-col justify-between h-28 sm:h-32 border border-slate-800 overflow-hidden">
+                        <!-- Top Badges -->
+                        <div class="flex justify-between items-center z-10">
+                            <span class="bg-slate-800 text-slate-300 text-[9px] font-semibold px-1.5 py-0.5 rounded">Grade 10</span>
+                            <span></span>
+                        </div>
+                        <!-- Center Avatar -->
+                        <div class="my-auto text-center z-10">
+                            <div class="w-10 h-10 sm:w-12 sm:h-12 mx-auto rounded-full bg-purple-600/30 border-2 border-purple-400 flex items-center justify-center text-lg sm:text-xl shadow-lg shadow-purple-500/20">
+                                👩‍🎓
+                            </div>
+                        </div>
+                        <!-- Bottom Info -->
+                        <div class="flex justify-between items-center z-10 text-[10px]">
+                            <span class="font-bold text-white truncate max-w-[65px]">Maria_C</span>
+                            <i class="fa-solid fa-microphone text-emerald-400 text-[10px]"></i>
+                        </div>
+                    </div>
+
+                    <!-- Tile 3: Prof_Mark (Instructor) -->
+                    <div class="relative bg-slate-900 rounded-lg p-2.5 flex flex-col justify-between h-28 sm:h-32 border border-slate-800 overflow-hidden">
+                        <!-- Top Badges -->
+                        <div class="flex justify-between items-center z-10">
+                            <span class="bg-amber-600 text-white text-[9px] font-bold px-1.5 py-0.5 rounded">Instructor</span>
+                            <span></span>
+                        </div>
+                        <!-- Center Avatar -->
+                        <div class="my-auto text-center z-10">
+                            <div class="w-10 h-10 sm:w-12 sm:h-12 mx-auto rounded-full bg-amber-600/30 border-2 border-amber-400 flex items-center justify-center text-lg sm:text-xl shadow-lg shadow-amber-500/20">
+                                👨‍🏫
+                            </div>
+                        </div>
+                        <!-- Bottom Info -->
+                        <div class="flex justify-between items-center z-10 text-[10px]">
+                            <span class="font-bold text-white truncate max-w-[65px]">Prof_Mark</span>
+                            <i class="fa-solid fa-microphone-slash text-red-500 text-[10px]"></i>
+                        </div>
+                    </div>
+
+                    <!-- Tile 4: Alex_Dev (Grade 10) -->
+                    <div class="relative bg-slate-900 rounded-lg p-2.5 flex flex-col justify-between h-28 sm:h-32 border border-slate-800 overflow-hidden">
+                        <!-- Top Badges -->
+                        <div class="flex justify-between items-center z-10">
+                            <span class="bg-slate-800 text-slate-300 text-[9px] font-semibold px-1.5 py-0.5 rounded">Grade 10</span>
+                            <span></span>
+                        </div>
+                        <!-- Center Avatar -->
+                        <div class="my-auto text-center z-10">
+                            <div class="w-10 h-10 sm:w-12 sm:h-12 mx-auto rounded-full bg-emerald-600/30 border-2 border-emerald-400 flex items-center justify-center text-lg sm:text-xl shadow-lg shadow-emerald-500/20">
+                                👨‍💻
+                            </div>
+                        </div>
+                        <!-- Bottom Info -->
+                        <div class="flex justify-between items-center z-10 text-[10px]">
+                            <span class="font-bold text-white truncate max-w-[65px]">Alex_Dev</span>
+                            <i class="fa-solid fa-microphone text-emerald-400 text-[10px]"></i>
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- Video Controls Toolbar (Camera, Mic, Zoom, Pause, Invite) -->
+                <div class="flex items-center justify-center space-x-2 mt-2.5 pt-2 border-t border-slate-800 text-xs">
+                    <button onclick="toggleVideo()" id="camBtn" class="p-2 bg-slate-800 hover:bg-slate-700 text-blue-400 rounded-xl transition" title="Toggle Camera">
+                        <i class="fa-solid fa-video"></i>
+                    </button>
+                    <button onclick="toggleAudio()" id="micBtn" class="p-2 bg-slate-800 hover:bg-slate-700 text-emerald-400 rounded-xl transition" title="Toggle Mic">
+                        <i class="fa-solid fa-microphone"></i>
+                    </button>
+                    <button onclick="toggleZoom()" class="p-2 bg-slate-800 hover:bg-slate-700 text-amber-400 rounded-xl transition" title="Zoom In/Out">
+                        <i class="fa-solid fa-magnifying-glass-plus"></i>
+                    </button>
+                    <button onclick="shareAppInvite()" class="px-3 py-1.5 bg-blue-600 hover:bg-blue-500 text-white rounded-xl font-semibold transition flex items-center space-x-1">
+                        <i class="fa-solid fa-share-nodes text-[11px]"></i>
+                        <span class="text-[11px]">Invite</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- PRO CHATROOM FEED CARD -->
+            <div class="bg-slate-900 border border-slate-800 rounded-2xl p-3 sm:p-4 shadow-xl flex flex-col h-80 sm:h-96">
+                <!-- Feed Header -->
+                <div class="flex justify-between items-center pb-2.5 border-b border-slate-800">
+                    <div class="flex items-center space-x-2">
+                        <i class="fa-solid fa-comments text-blue-500 text-sm"></i>
+                        <h3 class="font-bold text-xs sm:text-sm text-white" id="currentRoomHeading">General Student Chatroom</h3>
+                    </div>
+                    
+                    <div class="flex items-center space-x-2">
+                        <!-- Message Ad counter badge -->
+                        <span id="adCounterBadge" class="text-[9px] bg-amber-500/20 text-amber-300 px-2 py-0.5 rounded-full border border-amber-500/30 font-semibold">
+                            Ad sa 5 chats
+                        </span>
+                        <span class="text-[9px] bg-emerald-500/20 text-emerald-400 px-2 py-0.5 rounded-full border border-emerald-500/30 font-semibold">
+                            Active Room
+                        </span>
+                    </div>
+                </div>
+
+                <!-- Chat Messages Scroll Container -->
+                <div id="chatMessages" class="flex-1 overflow-y-auto space-y-3 py-3 pr-1 text-xs scrollbar-thin">
+                    
+                    <!-- Preloaded Peer Message 1 -->
+                    <div class="flex items-start space-x-2.5">
+                        <div class="w-8 h-8 rounded-full bg-purple-600/30 border border-purple-400 flex items-center justify-center text-sm">
+                            👩‍🎓
+                        </div>
+                        <div class="bg-slate-800/80 rounded-2xl p-2.5 max-w-[85%] border border-slate-700/60 shadow-md">
+                            <div class="flex items-center space-x-1.5 mb-1">
+                                <span class="font-bold text-xs text-purple-300">Maria_C</span>
+                                <span class="text-[9px] text-slate-400">12:45 PM</span>
+                            </div>
+                            <p class="text-slate-200 text-xs leading-relaxed">
+                                Thank you sir! I'm currently testing the mobile presentation file now.
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Preloaded Instructor Message 2 -->
+                    <div class="flex items-start space-x-2.5">
+                        <div class="w-8 h-8 rounded-full bg-amber-600/30 border border-amber-400 flex items-center justify-center text-sm">
+                            👨‍🏫
+                        </div>
+                        <div class="bg-slate-800/80 rounded-2xl p-2.5 max-w-[85%] border border-slate-700/60 shadow-md">
+                            <div class="flex items-center space-x-1.5 mb-1">
+                                <span class="font-bold text-xs text-amber-300">Prof_Mark</span>
+                                <span class="text-[8px] bg-amber-500/20 text-amber-300 px-1 py-0.2 rounded font-bold">Instructor</span>
+                                <span class="text-[9px] text-slate-400">12:46 PM</span>
+                            </div>
+                            <p class="text-slate-200 text-xs leading-relaxed">
+                                Welcome Maria! Tandaan nating panatilihing magalang ang pakikipag-chat ayon sa RA 10627 Anti-Bullying policy.
+                            </p>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+        </section>
+
+    </main>
+
+    <!-- ========================================== -->
+    <!-- 4. AUTO-ADJUSTABLE MOBILE BOTTOM TOOLBAR   -->
+    <!-- ========================================== -->
+    <div class="fixed bottom-12 left-0 right-0 z-40 bg-slate-900/95 backdrop-blur-lg border-t border-slate-800 px-3 py-2 shadow-2xl">
+        <div class="max-w-md mx-auto space-y-2">
+            
+            <!-- TOOLBAR BUTTONS ROW matching Screenshot -->
+            <div class="flex items-center justify-between px-1">
+                <!-- Gift Button (Amber/Gold styled) -->
+                <button onclick="openGiftModal()" class="px-3 py-2 rounded-xl bg-amber-500/15 border border-amber-500/40 text-amber-400 hover:bg-amber-500/25 active:scale-95 transition flex items-center space-x-1 text-xs font-bold shadow-sm">
+                    <i class="fa-solid fa-gift text-sm"></i>
+                    <span>Gift</span>
+                </button>
+
+                <!-- Like Button -->
+                <button onclick="sendLike()" class="p-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-amber-400 active:scale-95 transition flex items-center justify-center" title="Thumbs Up">
+                    <i class="fa-solid fa-thumbs-up text-sm"></i>
+                </button>
+
+                <!-- Center Prominent Action Button with Sparkle Star -->
+                <div class="-mt-4 flex items-center justify-center">
+                    <button onclick="triggerCenterAction()" class="w-12 h-12 rounded-full bg-white text-slate-900 hover:scale-110 active:scale-95 transition shadow-lg shadow-blue-500/20 flex items-center justify-center border-2 border-blue-400" title="Campus Magic">
+                        <i class="fa-solid fa-wand-magic-sparkles text-lg sparkle-icon"></i>
+                    </button>
+                </div>
+
+                <!-- Camera Button -->
+                <button onclick="openMediaUpload('camera')" class="p-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-blue-400 active:scale-95 transition flex items-center justify-center" title="Camera Photo">
+                    <i class="fa-solid fa-camera text-sm"></i>
+                </button>
+
+                <!-- Mic Voice Note Button -->
+                <button onclick="sendVoiceNote()" class="p-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-emerald-400 active:scale-95 transition flex items-center justify-center" title="Voice Message">
+                    <i class="fa-solid fa-microphone text-sm"></i>
+                </button>
+
+                <!-- Paperclip / APK Upload Button -->
+                <button onclick="openMediaUpload('apk')" class="p-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-purple-400 active:scale-95 transition flex items-center justify-center" title="Share APK / File">
+                    <i class="fa-solid fa-paperclip text-sm"></i>
+                </button>
+            </div>
+
+            <!-- CHAT INPUT & SEND BUTTON ROW -->
+            <div class="flex items-center space-x-2">
+                <input 
+                    type="text" 
+                    id="chatInput" 
+                    placeholder="Chat here... (Type message)" 
+                    onkeypress="handleKey(event)"
+                    class="flex-1 bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 transition"
+                >
+                <button onclick="sendMessage()" class="bg-blue-600 hover:bg-blue-500 active:scale-95 text-white font-bold px-4 py-2.5 rounded-xl text-xs transition shadow-md shadow-blue-500/30 flex items-center space-x-1.5 whitespace-nowrap">
+                    <span>Send</span>
+                    <i class="fa-solid fa-paper-plane text-xs"></i>
+                </button>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- ========================================== -->
+    <!-- 5. FIXED ADMOB BANNER (DOCK AT BOTTOM)     -->
+    <!-- ========================================== -->
+    <footer class="fixed bottom-0 left-0 right-0 z-50 bg-slate-950 border-t border-slate-800/90 py-1 px-2">
+        <div class="max-w-md mx-auto flex items-center justify-between text-[9px] text-slate-500">
+            <span class="font-bold text-slate-400">ADMOB BANNER</span>
+            <span class="font-mono text-blue-400">ca-app-pub-9786472984542330/4596337589</span>
+            <span class="bg-blue-500/10 text-blue-400 px-1.5 rounded">100% Free</span>
+        </div>
+    </footer>
+
+    <!-- ========================================== -->
+    <!-- 6. INTERSTITIAL SPONSOR AD MODAL (5 CHATS) -->
+    <!-- ========================================== -->
+    <div id="interstitialModal" class="hidden fixed inset-0 z-50 bg-slate-950/90 backdrop-blur-md flex items-center justify-center p-4">
+        <div class="bg-slate-900 border-2 border-amber-500/60 rounded-3xl p-6 max-w-sm w-full text-center relative shadow-2xl animate-in fade-in duration-200">
+            <!-- Badge -->
+            <div class="inline-flex items-center space-x-1 bg-emerald-500/20 text-emerald-400 px-3 py-1 rounded-full text-xs font-bold border border-emerald-500/30 mb-3">
+                <i class="fa-solid fa-shield-halved text-xs"></i>
+                <span>Google AdMob Verified • Safe Sponsor</span>
+            </div>
+
+            <!-- Avatar / Icon -->
+            <div class="w-16 h-16 mx-auto rounded-full bg-blue-600 border-2 border-amber-400 flex items-center justify-center text-3xl shadow-lg my-2">
+                🇵🇭
+            </div>
+
+            <h3 class="text-base font-black text-amber-400">PHILIPPINES HIGH TAMBAYAN CHAT</h3>
+            <p class="text-xs text-white font-bold mt-1">LIBRENG CHAT PARA SA LAHAT</p>
+            <p class="text-[11px] text-slate-400 mt-1">Sponsor Break (Lalabas bawat 5 mensahe para libre ang app)</p>
+
+            <!-- Ad Unit details -->
+            <div class="my-3 p-2 bg-slate-950 rounded-xl border border-slate-800 text-[10px]">
+                <span class="text-slate-400 block">Interstitial Ad Unit ID:</span>
+                <code class="text-blue-400 font-mono font-bold">ca-app-pub-9786472984542330/7506482083</code>
+            </div>
+
+            <!-- Countdown Timer -->
+            <div class="bg-indigo-950/60 border border-amber-400/40 rounded-2xl py-2 px-4 mb-3">
+                <p id="countdownText" class="text-xs font-black text-amber-300">
+                    Babalik sa chat: <span id="adSeconds">3</span>s
+                </p>
+            </div>
+
+            <!-- Close Button -->
+            <button onclick="closeInterstitialAd()" class="w-full py-2.5 bg-blue-600 hover:bg-blue-500 active:scale-95 text-white font-bold rounded-xl text-xs transition shadow-lg shadow-blue-500/30">
+                Ipasara ang Ad / Magpatuloy sa Chat
+            </button>
+
+            <p class="text-[9px] text-slate-500 mt-3">
+                🔒 Safe & Secure Campus Environment • RA 10627 Compliant
+            </p>
+        </div>
+    </div>
+
+    <!-- ========================================== -->
+    <!-- 7. GIFT STORE MODAL                         -->
+    <!-- ========================================== -->
+    <div id="giftModal" class="hidden fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="bg-slate-900 border border-slate-800 rounded-3xl p-5 max-w-sm w-full shadow-2xl">
+            <div class="flex justify-between items-center pb-2.5 border-b border-slate-800">
+                <h4 class="font-bold text-sm text-white flex items-center">
+                    <span class="mr-2">🎁</span> Magpadala ng Campus Gift
+                </h4>
+                <button onclick="closeGiftModal()" class="text-slate-400 hover:text-white text-sm">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+
+            <div class="grid grid-cols-3 gap-2.5 my-4">
+                <button onclick="sendGift('Halo-Halo Special', '🍧')" class="p-2.5 bg-slate-800 hover:bg-slate-700 rounded-xl text-center transition">
+                    <span class="text-2xl block mb-1">🍧</span>
+                    <span class="text-[10px] font-bold text-slate-200 block">Halo-Halo</span>
+                    <span class="text-[9px] text-amber-400">Libre ⭐</span>
+                </button>
+                <button onclick="sendGift('Kwek-Kwek Platter', '🍢')" class="p-2.5 bg-slate-800 hover:bg-slate-700 rounded-xl text-center transition">
+                    <span class="text-2xl block mb-1">🍢</span>
+                    <span class="text-[10px] font-bold text-slate-200 block">Kwek-Kwek</span>
+                    <span class="text-[9px] text-amber-400">Libre ⭐</span>
+                </button>
+                <button onclick="sendGift('Brown Sugar Milk Tea', '🧋')" class="p-2.5 bg-slate-800 hover:bg-slate-700 rounded-xl text-center transition">
+                    <span class="text-2xl block mb-1">🧋</span>
+                    <span class="text-[10px] font-bold text-slate-200 block">Milk Tea</span>
+                    <span class="text-[9px] text-amber-400">Libre ⭐</span>
+                </button>
+                <button onclick="sendGift('Reviewer Notes PDF', '📚')" class="p-2.5 bg-slate-800 hover:bg-slate-700 rounded-xl text-center transition">
+                    <span class="text-2xl block mb-1">📚</span>
+                    <span class="text-[10px] font-bold text-slate-200 block">Reviewer</span>
+                    <span class="text-[9px] text-amber-400">Libre ⭐</span>
+                </button>
+                <button onclick="sendGift('Lucky Exam Ballpen', '🖊️')" class="p-2.5 bg-slate-800 hover:bg-slate-700 rounded-xl text-center transition">
+                    <span class="text-2xl block mb-1">🖊️</span>
+                    <span class="text-[10px] font-bold text-slate-200 block">Lucky Pen</span>
+                    <span class="text-[9px] text-amber-400">Libre ⭐</span>
+                </button>
+                <button onclick="sendGift('Barkada Medal of Honor', '🏅')" class="p-2.5 bg-slate-800 hover:bg-slate-700 rounded-xl text-center transition">
+                    <span class="text-2xl block mb-1">🏅</span>
+                    <span class="text-[10px] font-bold text-slate-200 block">Barkada Medal</span>
+                    <span class="text-[9px] text-amber-400">Libre ⭐</span>
+                </button>
+            </div>
+
+            <button onclick="closeGiftModal()" class="w-full py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold rounded-xl text-xs">
+                Isara
+            </button>
+        </div>
+    </div>
+
+    <!-- Hidden file input for APK / Photo upload simulation -->
+    <input type="file" id="fileUploader" class="hidden" onchange="handleFileSelected(event)">
+
+    <!-- ========================================== -->
+    <!-- JAVASCRIPT APPLICATION LOGIC               -->
+    <!-- ========================================== -->
+    <script>
+        // 7 ACTIVE ROOMS DATA
+        const rooms = [
+            { id: 1, name: "General Tambayan", icon: "fa-comments", online: 42, desc: "Pangkalahatang talakayan at kwentuhan ng mga estudyante." },
+            { id: 2, name: "Campus Lounge", icon: "fa-school", online: 28, desc: "Tambayan malapit sa canteen at campus grounds." },
+            { id: 3, name: "Homework Help PH", icon: "fa-book-open", online: 55, desc: "Tulungan sa takdang-aralin at mga proyekto sa eskuwela." },
+            { id: 4, name: "BarkadaTambay", icon: "fa-user-group", online: 19, desc: "Masayang kwentuhan ng barkada at tropa." },
+            { id: 5, name: "Science & Tech Lab", icon: "fa-flask", online: 31, desc: "Diskusyon tungkol sa agham, coding, at teknolohiya." },
+            { id: 6, name: "Math Wizards", icon: "fa-square-root-variable", online: 24, desc: "Lutasin ang mga math equations at formula nang sama-sama." },
+            { id: 7, name: "Arts & Culture Hub", icon: "fa-palette", online: 15, desc: "Disenyo, sining, at pagpapalitan ng malikhaing ideya." }
         ];
-        return greetings[Math.floor(Math.random() * greetings.length)];
-      }
 
-      if (lower.includes('assign') || lower.includes('project') || lower.includes('doc') || lower.includes('file')) {
-        return "Sige mate! Gamitin mo lang 'yung Save / Download buttons sa Docs Tools sa taas para ma-share natin 'yung file sa iba.";
-      }
+        let currentRoomId = 1;
+        let messageCount = 0;
+        let isCamOn = true;
+        let isMicOn = true;
+        let isPaused = false;
+        let adCountdownTimer = null;
 
-      if (lower.includes('call') || lower.includes('video') || lower.includes('tawag')) {
-        return "G ako mate! Pindutin mo lang 'yung Audio Call o Video Call button sa taas para mag-connect tayo!";
-      }
-
-      if (lower.includes('music') || lower.includes('kanta') || lower.includes('sound') || lower.includes('tugtog')) {
-        return "Naka-play yung Campus FM sa taas mate! Pwede mo i-pause o i-next kung gusto mo ng ibang acoustic tune.";
-      }
-
-      const humanReplies = [
-        `Oo nga mate, sang-ayon ako diyan! Ganyan din sabi sa amin sa klase kanina haha.`,
-        `Haha totoong-totoo yan! Ano sa tingin mo, video call muna tayo mamaya?`,
-        `Sige mate, noted! I-chat mo lang sa akin dito sa lounge anytime.`,
-        `Medyo busy sa school ngayong linggo pero tambay muna ko dito konti kasama mo.`
-      ];
-      return humanReplies[Math.floor(Math.random() * humanReplies.length)];
-    }
-
-    function handleKeyPress(e) {
-      if (e.key === 'Enter') sendMessage();
-    }
-
-    /* Video & Audio Call System */
-    let callTimerInterval = null;
-    let callSeconds = 0;
-
-    function startCall(type) {
-      const modal = document.getElementById('callModal');
-      const targetName = (window.activeTab === 'private') ? aiStudents[window.selectedAI].name : 'Public Lounge Group Call (8 AI Students)';
-      
-      document.getElementById('callTargetName').innerText = targetName;
-      document.getElementById('callStatusText').innerText = `Connecting ${type} Call...`;
-      document.getElementById('callTimer').innerText = '00:00';
-      modal.style.display = 'flex';
-
-      // Play short call ringtone
-      playCallTone();
-
-      callSeconds = 0;
-      clearInterval(callTimerInterval);
-      
-      // Connect after 1.5s
-      setTimeout(() => {
-        document.getElementById('callStatusText').innerText = `🟢 ${type} Call Connected • HD Audio Active`;
-        callTimerInterval = setInterval(() => {
-          callSeconds++;
-          const mins = String(Math.floor(callSeconds / 60)).padStart(2, '0');
-          const secs = String(callSeconds % 60).padStart(2, '0');
-          document.getElementById('callTimer').innerText = `${mins}:${secs}`;
-        }, 1000);
-      }, 1500);
-    }
-
-    function endCall() {
-      clearInterval(callTimerInterval);
-      document.getElementById('callStatusText').innerText = 'Call Ended';
-      setTimeout(() => {
-        document.getElementById('callModal').style.display = 'none';
-      }, 400);
-    }
-
-    function toggleMuteMic(btn) {
-      const icon = btn.querySelector('i');
-      if (icon.classList.contains('fa-microphone')) {
-        icon.className = 'fa-solid fa-microphone-slash';
-        btn.style.background = '#ef4444';
-      } else {
-        icon.className = 'fa-solid fa-microphone';
-        btn.style.background = '#334155';
-      }
-    }
-
-    function toggleCamera(btn) {
-      const icon = btn.querySelector('i');
-      if (icon.classList.contains('fa-video')) {
-        icon.className = 'fa-solid fa-video-slash';
-        btn.style.background = '#ef4444';
-      } else {
-        icon.className = 'fa-solid fa-video';
-        btn.style.background = '#334155';
-      }
-    }
-
-    /* Campus FM Music Synthesizer */
-    const playlist = [
-      { title: "Pinoy Barkada Jam", genre: "Acoustic Pop Jam", chords: [261.63, 329.63, 392.00, 440.00] },
-      { title: "High School Chords", genre: "Cheerful Ukulele Melodies", chords: [293.66, 369.99, 440.00, 587.33] },
-      { title: "Lofi Study Tambayan", genre: "Chill Study Beats", chords: [220.00, 277.18, 329.63, 440.00] },
-      { title: "OPM Acoustic Serenade", genre: "Warm Folk Harmony", chords: [196.00, 246.94, 293.66, 392.00] }
-    ];
-    let currentTrackIdx = 0;
-    let isPlaying = false;
-    let audioCtx = null;
-    let musicInterval = null;
-
-    function playTone(freq, duration = 0.5) {
-      if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-      if (audioCtx.state === 'suspended') audioCtx.resume();
-      
-      const osc = audioCtx.createOscillator();
-      const gain = audioCtx.createGain();
-      osc.type = 'triangle';
-      osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
-      gain.gain.setValueAtTime(0.08, audioCtx.currentTime);
-      gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + duration);
-      osc.connect(gain);
-      gain.connect(audioCtx.destination);
-      osc.start();
-      osc.stop(audioCtx.currentTime + duration);
-    }
-
-    function playCallTone() {
-      try {
-        if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-        if (audioCtx.state === 'suspended') audioCtx.resume();
-        playTone(440, 0.2);
-        setTimeout(() => playTone(480, 0.4), 250);
-      } catch(e) {}
-    }
-
-    function toggleMusicPlayback() {
-      isPlaying = !isPlaying;
-      const btnLabel = document.getElementById('musicBtnLabel');
-      const icon = document.getElementById('musicIcon');
-      if (isPlaying) {
-        btnLabel.innerText = "Pause";
-        icon.className = "fa-solid fa-pause";
-        startFriendlyChords();
-      } else {
-        btnLabel.innerText = "Play";
-        icon.className = "fa-solid fa-play";
-        clearInterval(musicInterval);
-      }
-    }
-
-    function startFriendlyChords() {
-      clearInterval(musicInterval);
-      let step = 0;
-      musicInterval = setInterval(() => {
-        if (!isPlaying) return;
-        const track = playlist[currentTrackIdx];
-        const chord = track.chords;
-        const note = chord[step % chord.length];
-        playTone(note, 0.45);
-        step++;
-      }, 550);
-    }
-
-    function nextMusicTrack() {
-      currentTrackIdx = (currentTrackIdx + 1) % playlist.length;
-      updateTrackInfo();
-      if (isPlaying) startFriendlyChords();
-    }
-
-    function prevMusicTrack() {
-      currentTrackIdx = (currentTrackIdx - 1 + playlist.length) % playlist.length;
-      updateTrackInfo();
-      if (isPlaying) startFriendlyChords();
-    }
-
-    function updateTrackInfo() {
-      const track = playlist[currentTrackIdx];
-      document.getElementById('musicTitleText').innerText = `${track.title} (${track.genre})`;
-    }
-
-    // Document Toolbar Actions
-    function saveDoc() {
-      const text = generateTranscriptText();
-      localStorage.setItem('tambayan_saved_doc', text);
-      alert('Document Saved!');
-    }
-
-    function shareDoc() {
-      const text = generateTranscriptText();
-      if (navigator.clipboard) {
-        navigator.clipboard.writeText(text).then(() => {
-          alert('Link Copied to Clipboard!');
-        }).catch(() => {
-          alert('Link Copied to Clipboard!');
+        // Initialize App on Load
+        window.addEventListener('DOMContentLoaded', () => {
+            renderMainDashboardRooms();
+            renderRoomTabs();
         });
-      } else {
-        alert('Link Copied to Clipboard!');
-      }
-    }
 
-    function downloadDoc() {
-      const text = generateTranscriptText();
-      const blob = new Blob([text], { type: 'text/plain;charset=utf-8' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `Tambayan_AIStudents_Chat.txt`;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      alert('Downloading Document...');
-    }
+        // SWITCH VIEW (Main Dashboard <-> Student Dash)
+        function switchView(viewId) {
+            const mainDash = document.getElementById('mainDashboard');
+            const studentDash = document.getElementById('studentDash');
+            const btnMain = document.getElementById('btnMainDash');
+            const btnStudent = document.getElementById('btnStudentDash');
 
-    function generateTranscriptText() {
-      const messages = document.querySelectorAll('#chatBox .message');
-      let transcript = `=== PHILIPPINES HIGH TAMBAYAN & AI STUDENTS CHAT ===\nRoom: ${document.getElementById('roomTitle').innerText}\nSaved At: ${new Date().toLocaleString()}\n----------------------------------------\n\n`;
-      messages.forEach(m => {
-        const sender = m.querySelector('.msg-sender')?.innerText || '';
-        const body = m.innerText.replace(sender, '').trim();
-        transcript += `[${sender}]: ${body}\n`;
-      });
-      return transcript;
-    }
+            if (viewId === 'mainDashboard') {
+                mainDash.classList.remove('hidden');
+                studentDash.classList.add('hidden');
+                btnMain.className = "px-3.5 py-2 rounded-xl text-xs font-bold bg-blue-600 text-white shadow-md shadow-blue-500/30 transition flex items-center space-x-1.5 whitespace-nowrap active:scale-95";
+                btnStudent.className = "px-3.5 py-2 rounded-xl text-xs font-semibold bg-slate-800 text-slate-300 hover:bg-slate-700 transition flex items-center space-x-1.5 whitespace-nowrap active:scale-95";
+            } else {
+                studentDash.classList.remove('hidden');
+                mainDash.classList.add('hidden');
+                btnStudent.className = "px-3.5 py-2 rounded-xl text-xs font-bold bg-blue-600 text-white shadow-md shadow-blue-500/30 transition flex items-center space-x-1.5 whitespace-nowrap active:scale-95";
+                btnMain.className = "px-3.5 py-2 rounded-xl text-xs font-semibold bg-slate-800 text-slate-300 hover:bg-slate-700 transition flex items-center space-x-1.5 whitespace-nowrap active:scale-95";
+            }
+        }
 
-    // Profile & Admin modal
-    function openProfileModal() {
-      document.getElementById('aliasInput').value = window.localUser || 'benjie1977';
-      document.getElementById('profileModal').style.display = 'flex';
-    }
-    function closeProfileModal() {
-      document.getElementById('profileModal').style.display = 'none';
-    }
-    function saveProfileAlias() {
-      const val = document.getElementById('aliasInput').value.trim();
-      if (val) {
-        window.localUser = val;
-        localStorage.setItem('tambayan_alias', val);
-        document.getElementById('profileNameDisplay').innerText = val;
-        checkOwnerStatus();
-      }
-      closeProfileModal();
-    }
+        // RENDER 7 ROOMS ON MAIN DASHBOARD
+        function renderMainDashboardRooms() {
+            const grid = document.getElementById('mainRoomGrid');
+            if (!grid) return;
+            grid.innerHTML = rooms.map(r => `
+                <div onclick="selectRoom(${r.id})" class="bg-slate-900 border border-slate-800 rounded-2xl p-4 hover:border-blue-500/60 transition cursor-pointer flex flex-col justify-between shadow-lg">
+                    <div>
+                        <div class="flex justify-between items-center mb-2.5">
+                            <span class="w-9 h-9 rounded-xl bg-blue-500/15 text-blue-400 flex items-center justify-center font-bold text-sm">
+                                <i class="fa-solid ${r.icon}"></i>
+                            </span>
+                            <span class="text-[10px] bg-emerald-500/20 text-emerald-400 px-2 py-0.5 rounded-full font-bold">
+                                ${r.online} online
+                            </span>
+                        </div>
+                        <h4 class="font-bold text-white text-sm">${r.name}</h4>
+                        <p class="text-xs text-slate-400 mt-1 line-clamp-2">${r.desc}</p>
+                    </div>
+                    <button class="mt-3 w-full py-2 bg-slate-800 hover:bg-blue-600 text-slate-200 hover:text-white rounded-xl text-xs font-bold transition flex items-center justify-center space-x-1">
+                        <span>Pumasok sa Room</span>
+                        <i class="fa-solid fa-arrow-right text-[11px] ml-1"></i>
+                    </button>
+                </div>
+            `).join('');
+        }
 
-    function checkOwnerStatus() {
-      const isOwner = window.localUser.toLowerCase() === 'benjie1977' || window.localUser.toLowerCase() === 'benjie landingin';
-      const btn = document.getElementById('btnOwnerPortal');
-      if (btn) btn.style.display = isOwner ? 'inline-flex' : 'none';
-    }
+        // RENDER 7 ROOM PILL TABS
+        function renderRoomTabs() {
+            const container = document.getElementById('roomTabsContainer');
+            if (!container) return;
+            container.innerHTML = rooms.map(r => `
+                <button onclick="selectRoom(${r.id})" class="px-3 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap transition flex items-center space-x-1.5 ${r.id === currentRoomId ? 'bg-blue-600 text-white font-bold shadow-md shadow-blue-500/30' : 'bg-slate-800 text-slate-300 hover:bg-slate-700'}">
+                    <i class="fa-solid ${r.icon} text-xs"></i>
+                    <span>${r.name}</span>
+                </button>
+            `).join('');
+        }
 
-    function openAdminModal() {
-      const isOwner = window.localUser.toLowerCase() === 'benjie1977' || window.localUser.toLowerCase() === 'benjie landingin';
-      if (!isOwner) {
-        alert('ACCESS RESTRICTED: Tanging ang may-ari (Benjie Landingin) ang may pahintulot dito.');
-        return;
-      }
-      document.getElementById('adminModal').style.display = 'flex';
-    }
-    function closeAdminModal() {
-      document.getElementById('adminModal').style.display = 'none';
-    }
-    function verifyAdminPasscode() {
-      const pin = document.getElementById('adminPinInput').value.trim();
-      if (pin === '100877') {
-        document.getElementById('adminGateBody').style.display = 'none';
-        document.getElementById('adminControlsBody').style.display = 'block';
-        document.getElementById('adminErrorText').style.display = 'none';
-      } else {
-        document.getElementById('adminErrorText').style.display = 'block';
-      }
-    }
+        // SELECT CHAT ROOM
+        function selectRoom(id) {
+            currentRoomId = id;
+            const room = rooms.find(r => r.id === id);
+            document.getElementById('currentRoomHeading').innerText = room.name;
+            renderRoomTabs();
+            switchView('studentDash');
+            addSystemNotice(`Naka-lipat ka na sa kwartong "${room.name}".`);
+        }
 
-    function escapeHtml(str) {
-      return (str || '').replace(/[&<>"']/g, function(m) {
-        return ({
-          '&': '&amp;',
-          '<': '&lt;',
-          '>': '&gt;',
-          '"': '&quot;',
-          "'": '&#39;'
-        })[m];
-      });
-    }
+        // CHAT MESSAGE SENDING & 5-MESSAGE AD TRIGGER
+        function sendMessage() {
+            const input = document.getElementById('chatInput');
+            const text = input.value.trim();
+            if (!text) return;
 
-    // Init
-    document.getElementById('profileNameDisplay').innerText = window.localUser;
-    checkOwnerStatus();
-  </script>
+            const chatMessages = document.getElementById('chatMessages');
+            const timeNow = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+            // Append User message
+            chatMessages.innerHTML += `
+                <div class="flex items-start space-x-2.5 justify-end">
+                    <div class="bg-blue-600 rounded-2xl p-2.5 max-w-[85%] text-white shadow-md">
+                        <div class="flex items-center space-x-1.5 mb-1 justify-end">
+                            <span class="font-bold text-xs text-blue-100">benjie1978</span>
+                            <span class="text-[9px] text-blue-200">${timeNow}</span>
+                        </div>
+                        <p class="text-xs leading-relaxed">${escapeHtml(text)}</p>
+                    </div>
+                    <div class="w-8 h-8 rounded-full bg-blue-500 border border-blue-300 flex items-center justify-center text-sm shadow">
+                        😎
+                    </div>
+                </div>
+            `;
+
+            input.value = '';
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+
+            // Increment message counter & check for interstitial ad trigger every 5 messages
+            messageCount++;
+            const remainingUntilAd = (5 - (messageCount % 5)) === 0 ? 5 : (5 - (messageCount % 5));
+            document.getElementById('adCounterBadge').innerText = `Ad sa ${remainingUntilAd} chats`;
+
+            if (messageCount % 5 === 0) {
+                setTimeout(showInterstitialAd, 600);
+            } else {
+                // Friendly AI Student response simulation
+                triggerPeerReply(text);
+            }
+        }
+
+        function handleKey(e) {
+            if (e.key === 'Enter') sendMessage();
+        }
+
+        function triggerPeerReply(userText) {
+            setTimeout(() => {
+                const peers = [
+                    { name: "Maria_C", avatar: "👩‍🎓", badge: "Grade 10", text: "Nice point! Tuloy lang natin ang discussion para sa group project." },
+                    { name: "Alex_Dev", avatar: "👨‍💻", badge: "Grade 10", text: "Working smoothly ang APK build mate. Check natin mamaya!" },
+                    { name: "Prof_Mark", avatar: "👨‍🏫", badge: "Instructor", text: "Mabuti ang inyong kooperasyon. Maghanda para sa quiz bukas." }
+                ];
+                const peer = peers[Math.floor(Math.random() * peers.length)];
+                const chatMessages = document.getElementById('chatMessages');
+                const timeNow = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+                chatMessages.innerHTML += `
+                    <div class="flex items-start space-x-2.5">
+                        <div class="w-8 h-8 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center text-sm">
+                            ${peer.avatar}
+                        </div>
+                        <div class="bg-slate-800/80 rounded-2xl p-2.5 max-w-[85%] border border-slate-700/60 shadow-md">
+                            <div class="flex items-center space-x-1.5 mb-1">
+                                <span class="font-bold text-xs text-slate-200">${peer.name}</span>
+                                <span class="text-[8px] bg-blue-500/20 text-blue-300 px-1 rounded font-bold">${peer.badge}</span>
+                                <span class="text-[9px] text-slate-400">${timeNow}</span>
+                            </div>
+                            <p class="text-slate-200 text-xs leading-relaxed">${peer.text}</p>
+                        </div>
+                    </div>
+                `;
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+            }, 1200);
+        }
+
+        function addSystemNotice(msg) {
+            const chatMessages = document.getElementById('chatMessages');
+            if (!chatMessages) return;
+            chatMessages.innerHTML += `
+                <div class="text-center my-1.5">
+                    <span class="text-[10px] bg-slate-800/90 text-slate-400 px-2.5 py-0.5 rounded-full border border-slate-700">
+                        ${msg}
+                    </span>
+                </div>
+            `;
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        // INTERSTITIAL AD MODAL LOGIC
+        function showInterstitialAd() {
+            const modal = document.getElementById('interstitialModal');
+            modal.classList.remove('hidden');
+            let sec = 3;
+            document.getElementById('adSeconds').innerText = sec;
+
+            if (adCountdownTimer) clearInterval(adCountdownTimer);
+            adCountdownTimer = setInterval(() => {
+                sec--;
+                if (sec > 0) {
+                    document.getElementById('adSeconds').innerText = sec;
+                } else {
+                    clearInterval(adCountdownTimer);
+                    document.getElementById('countdownText').innerHTML = "Handa na! Pindutin ang button para magpatuloy.";
+                }
+            }, 1000);
+        }
+
+        function closeInterstitialAd() {
+            if (adCountdownTimer) clearInterval(adCountdownTimer);
+            document.getElementById('interstitialModal').classList.add('hidden');
+            addSystemNotice("Sponsor ad natapos na. Libreng chat nagpapatuloy!");
+        }
+
+        // TOOLBAR ACTIONS
+        function sendLike() {
+            const chatMessages = document.getElementById('chatMessages');
+            chatMessages.innerHTML += `
+                <div class="text-center my-1">
+                    <span class="text-xs bg-amber-500/20 text-amber-300 border border-amber-500/40 px-3 py-1 rounded-full font-bold inline-flex items-center space-x-1">
+                        <span>👍 Nagpadala ng thumbs-up si benjie1978!</span>
+                    </span>
+                </div>
+            `;
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        function openGiftModal() {
+            document.getElementById('giftModal').classList.remove('hidden');
+        }
+
+        function closeGiftModal() {
+            document.getElementById('giftModal').classList.add('hidden');
+        }
+
+        function sendGift(giftName, emoji) {
+            closeGiftModal();
+            const chatMessages = document.getElementById('chatMessages');
+            chatMessages.innerHTML += `
+                <div class="text-center my-2">
+                    <div class="inline-block bg-gradient-to-r from-amber-600/30 to-purple-600/30 border border-amber-500/50 rounded-2xl px-4 py-2 shadow-lg">
+                        <span class="text-2xl block mb-0.5">${emoji}</span>
+                        <p class="text-xs font-bold text-amber-300">Nagregalo si benjie1978 ng ${giftName}!</p>
+                        <span class="text-[9px] text-slate-400">100% Libreng Campus Token</span>
+                    </div>
+                </div>
+            `;
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        function triggerCenterAction() {
+            addSystemNotice("✨ Campus Magic: Active 4-Student Study Session on High Definition!");
+        }
+
+        function openMediaUpload(type) {
+            const uploader = document.getElementById('fileUploader');
+            uploader.setAttribute('data-upload-type', type);
+            uploader.click();
+        }
+
+        function handleFileSelected(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            const type = e.target.getAttribute('data-upload-type');
+            const chatMessages = document.getElementById('chatMessages');
+            
+            chatMessages.innerHTML += `
+                <div class="flex items-start space-x-2.5 justify-end">
+                    <div class="bg-blue-600/90 rounded-2xl p-2.5 max-w-[85%] text-white shadow-md border border-blue-400">
+                        <div class="flex items-center space-x-2">
+                            <i class="fa-solid ${type === 'apk' ? 'fa-file-zipper text-amber-300' : 'fa-image text-emerald-300'} text-lg"></i>
+                            <div>
+                                <span class="font-bold text-xs block">${file.name}</span>
+                                <span class="text-[9px] text-blue-200">${(file.size / 1024).toFixed(1)} KB • Uploaded</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        function sendVoiceNote() {
+            addSystemNotice("🎙️ Voice Note sent (0:05)");
+        }
+
+        // VIDEO CONTROLS
+        function toggleVideo() {
+            isCamOn = !isCamOn;
+            const icon = document.getElementById('userCamIcon');
+            const btn = document.getElementById('camBtn');
+            if (isCamOn) {
+                icon.className = "fa-solid fa-video";
+                icon.parentElement.classList.remove('text-red-500');
+                icon.parentElement.classList.add('text-emerald-400');
+                btn.className = "p-2 bg-slate-800 hover:bg-slate-700 text-blue-400 rounded-xl transition";
+            } else {
+                icon.className = "fa-solid fa-video-slash";
+                btn.className = "p-2 bg-red-600/30 text-red-400 rounded-xl transition";
+            }
+        }
+
+        function toggleAudio() {
+            isMicOn = !isMicOn;
+            const icon = document.getElementById('userMicIcon');
+            const btn = document.getElementById('micBtn');
+            if (isMicOn) {
+                icon.className = "fa-solid fa-microphone";
+                btn.className = "p-2 bg-slate-800 hover:bg-slate-700 text-emerald-400 rounded-xl transition";
+            } else {
+                icon.className = "fa-solid fa-microphone-slash text-red-500";
+                btn.className = "p-2 bg-red-600/30 text-red-400 rounded-xl transition";
+            }
+        }
+
+        function togglePausePlay() {
+            isPaused = !isPaused;
+            const btn = document.getElementById('pauseBtn');
+            if (isPaused) {
+                btn.innerHTML = `<i class="fa-solid fa-play text-emerald-400"></i>`;
+                addSystemNotice("Video call stream paused.");
+            } else {
+                btn.innerHTML = `<i class="fa-solid fa-pause"></i>`;
+                addSystemNotice("Video call stream resumed.");
+            }
+        }
+
+        function toggleZoom() {
+            addSystemNotice("Video layout zoom toggled.");
+        }
+
+        function toggleFullscreen() {
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen().catch(() => {});
+            } else {
+                document.exitFullscreen().catch(() => {});
+            }
+        }
+
+        function shareAppInvite() {
+            if (navigator.share) {
+                navigator.share({
+                    title: "Philippines High School Tambayan Chat",
+                    text: "Sali ka sa aming online tambayan at video study room!",
+                    url: window.location.href
+                }).catch(() => {});
+            } else {
+                navigator.clipboard.writeText(window.location.href);
+                alert("Na-kopya na ang link ng room sa iyong clipboard!");
+            }
+        }
+
+        function goBack() {
+            switchView('mainDashboard');
+        }
+
+        function toggleMoreMenu() {
+            alert("Philippines High School Tambayan\nVersion 1.0.3\nCompliant with RA 10627 Anti-Bullying Act.");
+        }
+
+        function escapeHtml(string) {
+            const pre = document.createElement('pre');
+            const text = document.createTextNode(string);
+            pre.appendChild(text);
+            return pre.innerHTML;
+        }
+    </script>
 </body>
 </html>

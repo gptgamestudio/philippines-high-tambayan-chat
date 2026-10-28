@@ -54,6 +54,8 @@ import androidx.compose.material.icons.filled.SentimentSatisfied
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.material.icons.filled.Shield
 import androidx.compose.material.icons.filled.Star
+import androidx.compose.material.icons.filled.ThumbUp
+import androidx.compose.material.icons.filled.AutoAwesome
 import androidx.compose.material.icons.filled.Videocam
 import androidx.compose.material.icons.filled.VideocamOff
 import androidx.compose.material.icons.filled.VolumeUp
@@ -1034,131 +1036,220 @@ fun ChatRoomScreen(
             }
         }
 
-        // PRO CHAT INPUT TOOLBAR (Camera, APK/Paperclip, Gift, Emoji, Text Field, Send)
+        // PRO CHAT INPUT TOOLBAR MATCHING SCREENSHOT
         Surface(
             color = Color(0xFF0F172A),
-            shadowElevation = 8.dp,
+            shadowElevation = 10.dp,
             modifier = Modifier
                 .fillMaxWidth()
                 .border(1.dp, Color(0xFF1E293B))
         ) {
-            Row(
+            Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 6.dp, vertical = 6.dp),
-                verticalAlignment = Alignment.CenterVertically
+                    .padding(horizontal = 8.dp, vertical = 6.dp)
             ) {
-                // Action Buttons: Camera, APK/File, Gift, Emoji
+                // Tier 1: Action Toolbar Row [Gift] [Like] [Center Sparkle] [Camera] [Mic] [Upload APK]
                 Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(0.dp)
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 2.dp, vertical = 4.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
+                    // Gift Button (Gold/Amber styled with border)
+                    Surface(
+                        onClick = { Toast.makeText(context, "Nagbubukas ng Gift Store para sa mga ka-tambay!", Toast.LENGTH_SHORT).show() },
+                        shape = RoundedCornerShape(12.dp),
+                        color = Color(0xFFF59E0B).copy(alpha = 0.15f),
+                        border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFFF59E0B).copy(alpha = 0.5f)),
+                        modifier = Modifier.testTag("btn_gift_store")
+                    ) {
+                        Row(
+                            modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(4.dp)
+                        ) {
+                            Icon(Icons.Default.CardGiftcard, contentDescription = "Gift", tint = Color(0xFFFBBF24), modifier = Modifier.size(15.dp))
+                            Text("Gift", fontSize = 11.sp, fontWeight = FontWeight.Bold, color = Color(0xFFFBBF24))
+                        }
+                    }
+
+                    // Like Button
+                    IconButton(
+                        onClick = {
+                            onSendMessage("👍 (Thumbs up mula kay ${studentProfile.alias})")
+                        },
+                        modifier = Modifier
+                            .size(36.dp)
+                            .clip(RoundedCornerShape(10.dp))
+                            .background(Color(0xFF1E293B))
+                            .testTag("btn_like_action")
+                    ) {
+                        Icon(Icons.Default.ThumbUp, contentDescription = "Like", tint = Color(0xFFFBBF24), modifier = Modifier.size(16.dp))
+                    }
+
+                    // Center Prominent Sparkle Button
+                    Box(
+                        modifier = Modifier
+                            .size(46.dp)
+                            .clip(CircleShape)
+                            .background(Color.White)
+                            .border(2.dp, Color(0xFF60A5FA), CircleShape)
+                            .clickable {
+                                Toast.makeText(context, "✨ Campus Magic: Active 4-Student Study Session on High Definition!", Toast.LENGTH_SHORT).show()
+                            }
+                            .testTag("btn_center_sparkle"),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.AutoAwesome,
+                            contentDescription = "Campus Magic",
+                            tint = Color(0xFF2563EB),
+                            modifier = Modifier.size(24.dp)
+                        )
+                    }
+
+                    // Camera Button
                     IconButton(
                         onClick = { Toast.makeText(context, "Nagbubukas ng Camera photo attachment...", Toast.LENGTH_SHORT).show() },
                         modifier = Modifier
-                            .size(32.dp)
+                            .size(36.dp)
+                            .clip(RoundedCornerShape(10.dp))
+                            .background(Color(0xFF1E293B))
                             .testTag("btn_attach_camera")
                     ) {
-                        Icon(Icons.Default.PhotoCamera, contentDescription = "Camera", tint = Color(0xFF94A3B8), modifier = Modifier.size(16.dp))
+                        Icon(Icons.Default.PhotoCamera, contentDescription = "Camera", tint = Color(0xFF60A5FA), modifier = Modifier.size(16.dp))
                     }
 
+                    // Mic Voice Note Button
                     IconButton(
-                        onClick = { Toast.makeText(context, "Nagbubukas ng APK / File attachment...", Toast.LENGTH_SHORT).show() },
+                        onClick = { Toast.makeText(context, "🎙️ Voice note recording...", Toast.LENGTH_SHORT).show() },
                         modifier = Modifier
-                            .size(32.dp)
+                            .size(36.dp)
+                            .clip(RoundedCornerShape(10.dp))
+                            .background(Color(0xFF1E293B))
+                            .testTag("btn_attach_mic")
+                    ) {
+                        Icon(Icons.Default.Mic, contentDescription = "Mic Voice Note", tint = Color(0xFF34D399), modifier = Modifier.size(16.dp))
+                    }
+
+                    // Paperclip / APK Upload Button
+                    IconButton(
+                        onClick = { Toast.makeText(context, "Nagbubukas ng APK / File attachment selector...", Toast.LENGTH_SHORT).show() },
+                        modifier = Modifier
+                            .size(36.dp)
+                            .clip(RoundedCornerShape(10.dp))
+                            .background(Color(0xFF1E293B))
                             .testTag("btn_attach_apk")
                     ) {
-                        Icon(Icons.Default.AttachFile, contentDescription = "Attach File", tint = Color(0xFF94A3B8), modifier = Modifier.size(16.dp))
-                    }
-
-                    IconButton(
-                        onClick = { Toast.makeText(context, "Nagbubukas ng Gift Store para sa mga ka-tambay!", Toast.LENGTH_SHORT).show() },
-                        modifier = Modifier
-                            .size(32.dp)
-                            .testTag("btn_attach_gift")
-                    ) {
-                        Icon(Icons.Default.CardGiftcard, contentDescription = "Gift", tint = Color(0xFFFBBF24), modifier = Modifier.size(16.dp))
-                    }
-
-                    IconButton(
-                        onClick = { Toast.makeText(context, "Binubuksan ang Emoji Picker...", Toast.LENGTH_SHORT).show() },
-                        modifier = Modifier
-                            .size(32.dp)
-                            .testTag("btn_attach_emoji")
-                    ) {
-                        Icon(Icons.Default.SentimentSatisfied, contentDescription = "Emoji", tint = Color(0xFFFACC15), modifier = Modifier.size(16.dp))
+                        Icon(Icons.Default.AttachFile, contentDescription = "Attach File", tint = Color(0xFFC084FC), modifier = Modifier.size(16.dp))
                     }
                 }
 
-                Spacer(modifier = Modifier.width(4.dp))
+                Spacer(modifier = Modifier.height(6.dp))
 
-                OutlinedTextField(
-                    value = inputText,
-                    onValueChange = { inputText = it },
-                    placeholder = {
-                        Text(
-                            text = "Chat here...",
-                            fontSize = 12.sp,
-                            color = Color(0xFF64748B)
-                        )
-                    },
-                    modifier = Modifier
-                        .weight(1f)
-                        .testTag("input_chat_message"),
-                    shape = RoundedCornerShape(12.dp),
-                    colors = OutlinedTextFieldDefaults.colors(
-                        focusedContainerColor = Color(0xFF020617),
-                        unfocusedContainerColor = Color(0xFF020617),
-                        focusedTextColor = Color.White,
-                        unfocusedTextColor = Color.White,
-                        focusedBorderColor = Color(0xFF3B82F6),
-                        unfocusedBorderColor = Color(0xFF1E293B)
-                    ),
-                    singleLine = true
-                )
-
-                Spacer(modifier = Modifier.width(6.dp))
-
-                IconButton(
-                    onClick = {
-                        if (inputText.isNotBlank()) {
-                            onSendMessage(inputText)
-                            inputText = ""
-                        }
-                    },
-                    modifier = Modifier
-                        .size(38.dp)
-                        .clip(RoundedCornerShape(10.dp))
-                        .background(Color(0xFF2563EB))
-                        .testTag("btn_send_chat")
+                // Tier 2: Text Input Field & Send Button
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Icon(
-                        imageVector = Icons.AutoMirrored.Filled.Send,
-                        contentDescription = "Send Message",
-                        tint = Color.White,
-                        modifier = Modifier.size(16.dp)
+                    OutlinedTextField(
+                        value = inputText,
+                        onValueChange = { inputText = it },
+                        placeholder = {
+                            Text(
+                                text = "Chat here... (Type message)",
+                                fontSize = 12.sp,
+                                color = Color(0xFF64748B)
+                            )
+                        },
+                        modifier = Modifier
+                            .weight(1f)
+                            .testTag("input_chat_message"),
+                        shape = RoundedCornerShape(14.dp),
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedContainerColor = Color(0xFF020617),
+                            unfocusedContainerColor = Color(0xFF020617),
+                            focusedTextColor = Color.White,
+                            unfocusedTextColor = Color.White,
+                            focusedBorderColor = Color(0xFF3B82F6),
+                            unfocusedBorderColor = Color(0xFF1E293B)
+                        ),
+                        singleLine = true
                     )
+
+                    Spacer(modifier = Modifier.width(8.dp))
+
+                    Surface(
+                        onClick = {
+                            if (inputText.isNotBlank()) {
+                                onSendMessage(inputText)
+                                inputText = ""
+                            }
+                        },
+                        shape = RoundedCornerShape(14.dp),
+                        color = Color(0xFF0D6EFD),
+                        shadowElevation = 4.dp,
+                        modifier = Modifier.testTag("btn_send_chat")
+                    ) {
+                        Row(
+                            modifier = Modifier.padding(horizontal = 14.dp, vertical = 12.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(6.dp)
+                        ) {
+                            Text(
+                                text = "Send",
+                                fontSize = 12.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = Color.White
+                            )
+                            Icon(
+                                imageVector = Icons.AutoMirrored.Filled.Send,
+                                contentDescription = "Send",
+                                tint = Color.White,
+                                modifier = Modifier.size(14.dp)
+                            )
+                        }
+                    }
                 }
             }
         }
 
-        // Google AdMob Test Banner
+        // Fixed AdMob Banner at bottom
         Surface(
-            color = Color(0xFF0F172A),
+            color = Color(0xFF020617),
             modifier = Modifier
                 .fillMaxWidth()
                 .border(androidx.compose.foundation.BorderStroke(1.dp, Color(0xFF1E293B)))
                 .testTag("admob_banner")
         ) {
-            Text(
-                text = "ADVERTISEMENT • Google AdMob Test Banner • Fixed Sponsor",
-                fontSize = 10.sp,
-                color = Color(0xFF64748B),
-                textAlign = TextAlign.Center,
+            Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(vertical = 6.dp)
-            )
+                    .padding(horizontal = 12.dp, vertical = 4.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = "ADMOB BANNER",
+                    fontSize = 9.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Color(0xFF94A3B8)
+                )
+                Text(
+                    text = "ca-app-pub-9786472984542330/4596337589",
+                    fontSize = 9.sp,
+                    fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace,
+                    color = Color(0xFF60A5FA)
+                )
+                Text(
+                    text = "100% Free",
+                    fontSize = 9.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Color(0xFF34D399)
+                )
+            }
         }
     }
 

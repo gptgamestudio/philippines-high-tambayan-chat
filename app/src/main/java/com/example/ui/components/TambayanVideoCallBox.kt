@@ -100,7 +100,7 @@ fun TambayanVideoCallBox(
             .testTag("video_call_square_box")
     ) {
         Column(modifier = Modifier.padding(14.dp)) {
-            // Header: Live dot, Room title, Online count
+            // Header: Live dot, "Video Call Grid (4 Students Active)", Pause and Zoom/Fullscreen actions
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
@@ -115,8 +115,8 @@ fun TambayanVideoCallBox(
                     )
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(
-                        text = currentRoom.title,
-                        fontSize = 14.sp,
+                        text = "Video Call Grid (4 Students Active)",
+                        fontSize = 13.sp,
                         fontWeight = FontWeight.Bold,
                         color = Color.White,
                         maxLines = 1,
@@ -124,194 +124,280 @@ fun TambayanVideoCallBox(
                     )
                 }
 
-                Box(
-                    modifier = Modifier
-                        .clip(RoundedCornerShape(8.dp))
-                        .background(Color(0xFF1E293B))
-                        .padding(horizontal = 8.dp, vertical = 4.dp)
-                ) {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
+                Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                    IconButton(
+                        onClick = { isStreamPaused = !isStreamPaused },
+                        modifier = Modifier
+                            .size(28.dp)
+                            .clip(RoundedCornerShape(6.dp))
+                            .background(Color(0xFF1E293B))
+                    ) {
                         Icon(
-                            imageVector = Icons.Default.People,
-                            contentDescription = "Online",
-                            tint = Color(0xFF60A5FA),
-                            modifier = Modifier.size(12.dp)
+                            imageVector = if (isStreamPaused) Icons.Default.PlayArrow else Icons.Default.Pause,
+                            contentDescription = "Pause",
+                            tint = Color.White,
+                            modifier = Modifier.size(14.dp)
                         )
-                        Spacer(modifier = Modifier.width(4.dp))
-                        Text(
-                            text = "${currentRoom.onlineCount} Online",
-                            fontSize = 11.sp,
-                            fontWeight = FontWeight.SemiBold,
-                            color = Color(0xFFCBD5E1)
+                    }
+                    IconButton(
+                        onClick = { isZoomed = !isZoomed },
+                        modifier = Modifier
+                            .size(28.dp)
+                            .clip(RoundedCornerShape(6.dp))
+                            .background(Color(0xFF1E293B))
+                    ) {
+                        Icon(
+                            imageVector = if (isZoomed) Icons.Default.ZoomOut else Icons.Default.ZoomIn,
+                            contentDescription = "Zoom/Expand",
+                            tint = Color.White,
+                            modifier = Modifier.size(14.dp)
                         )
                     }
                 }
             }
 
-            Spacer(modifier = Modifier.height(10.dp))
+            Spacer(modifier = Modifier.height(8.dp))
 
-            // Video Feed Grid (2 slots: Main Host Slot + Secondary Student Slot)
-            val gridHeight = if (isZoomed) 210.dp else 165.dp
-            Row(
+            // 2x2 Video Tile Grid (4 Students Active)
+            Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(gridHeight)
                     .clip(RoundedCornerShape(14.dp))
                     .background(Color(0xFF020617)) // bg-slate-950
                     .border(1.dp, Color(0xFF1E293B).copy(alpha = 0.8f), RoundedCornerShape(14.dp))
-                    .padding(8.dp),
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    .padding(6.dp),
+                verticalArrangement = Arrangement.spacedBy(6.dp)
             ) {
-                // Slot 1: Host Live Stream
-                Box(
-                    modifier = Modifier
-                        .weight(1f)
-                        .fillMaxSize()
-                        .clip(RoundedCornerShape(10.dp))
-                        .background(
-                            Brush.verticalGradient(
-                                colors = listOf(Color(0xFF1E3A8A), Color(0xFF0F172A))
-                            )
-                        )
-                        .border(1.dp, Color(0xFF1E293B), RoundedCornerShape(10.dp)),
-                    contentAlignment = Alignment.Center
+                val tileHeight = if (isZoomed) 120.dp else 95.dp
+
+                // Row 1: You (benjie1978) & Maria_C
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(6.dp)
                 ) {
-                    if (isStreamPaused) {
-                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                            Icon(
-                                imageVector = Icons.Default.Pause,
-                                contentDescription = "Stream Paused",
-                                tint = Color(0xFFFBBF24),
-                                modifier = Modifier.size(28.dp)
-                            )
-                            Text(
-                                text = "Naka-pause ang video",
-                                fontSize = 10.sp,
-                                color = Color(0xFF94A3B8)
-                            )
-                        }
-                    } else if (!isCameraOn) {
-                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                            Icon(
-                                imageVector = Icons.Default.VideocamOff,
-                                contentDescription = "Camera Off",
-                                tint = Color(0xFFEF4444),
-                                modifier = Modifier.size(28.dp)
-                            )
-                            Text(
-                                text = "Camera Off",
-                                fontSize = 10.sp,
-                                color = Color(0xFF94A3B8)
-                            )
-                        }
-                    } else {
-                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                            Box(
-                                modifier = Modifier
-                                    .size(46.dp)
-                                    .clip(CircleShape)
-                                    .background(Color(0xFF2563EB))
-                                    .border(2.dp, Color(0xFF60A5FA), CircleShape),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                Text("😎", fontSize = 24.sp)
-                            }
-                            Spacer(modifier = Modifier.height(6.dp))
+                    // Tile 1: You
+                    Box(
+                        modifier = Modifier
+                            .weight(1f)
+                            .height(tileHeight)
+                            .clip(RoundedCornerShape(10.dp))
+                            .background(Color(0xFF0F172A))
+                            .border(1.dp, Color(0xFF1E293B), RoundedCornerShape(10.dp))
+                            .padding(6.dp)
+                    ) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
                             Box(
                                 modifier = Modifier
                                     .clip(RoundedCornerShape(4.dp))
-                                    .background(Color(0xCC020617))
-                                    .padding(horizontal = 6.dp, vertical = 2.dp)
+                                    .background(Color(0xFF0D6EFD))
+                                    .padding(horizontal = 5.dp, vertical = 2.dp)
                             ) {
-                                Text(
-                                    text = "$hostAlias (Host)",
-                                    fontSize = 10.sp,
-                                    fontWeight = FontWeight.Bold,
-                                    color = Color.White
+                                Text("You", fontSize = 9.sp, fontWeight = FontWeight.Bold, color = Color.White)
+                            }
+                            Box(
+                                modifier = Modifier
+                                    .clip(RoundedCornerShape(4.dp))
+                                    .background(Color(0xCC000000))
+                                    .padding(horizontal = 4.dp, vertical = 2.dp)
+                            ) {
+                                Text("1080p", fontSize = 8.sp, fontWeight = FontWeight.Bold, color = Color(0xFF34D399))
+                            }
+                        }
+
+                        // Avatar
+                        Box(
+                            modifier = Modifier
+                                .align(Alignment.Center)
+                                .size(40.dp)
+                                .clip(CircleShape)
+                                .background(Color(0xFF2563EB).copy(alpha = 0.3f))
+                                .border(1.5.dp, Color(0xFF60A5FA), CircleShape),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text("😎", fontSize = 20.sp)
+                        }
+
+                        // Bottom row: Name & status
+                        Row(
+                            modifier = Modifier
+                                .align(Alignment.BottomCenter)
+                                .fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(hostAlias, fontSize = 9.sp, fontWeight = FontWeight.Bold, color = Color.White, maxLines = 1)
+                            Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                                Icon(
+                                    imageVector = if (isMicOn) Icons.Default.Mic else Icons.Default.MicOff,
+                                    contentDescription = "Mic",
+                                    tint = if (isMicOn) Color(0xFF34D399) else Color(0xFFEF4444),
+                                    modifier = Modifier.size(10.dp)
+                                )
+                                Icon(
+                                    imageVector = if (isCameraOn) Icons.Default.Videocam else Icons.Default.VideocamOff,
+                                    contentDescription = "Cam",
+                                    tint = if (isCameraOn) Color(0xFF34D399) else Color(0xFFEF4444),
+                                    modifier = Modifier.size(10.dp)
                                 )
                             }
                         }
                     }
 
-                    // Live 1080p Badge
+                    // Tile 2: Maria_C
                     Box(
                         modifier = Modifier
-                            .align(Alignment.TopStart)
+                            .weight(1f)
+                            .height(tileHeight)
+                            .clip(RoundedCornerShape(10.dp))
+                            .background(Color(0xFF0F172A))
+                            .border(1.dp, Color(0xFF1E293B), RoundedCornerShape(10.dp))
                             .padding(6.dp)
-                            .clip(RoundedCornerShape(4.dp))
-                            .background(Color(0xCC000000))
-                            .padding(horizontal = 5.dp, vertical = 2.dp)
                     ) {
-                        Text(
-                            text = "LIVE 1080p",
-                            fontSize = 8.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = Color(0xFF34D399)
-                        )
+                        Box(
+                            modifier = Modifier
+                                .align(Alignment.TopStart)
+                                .clip(RoundedCornerShape(4.dp))
+                                .background(Color(0xFF1E293B))
+                                .padding(horizontal = 5.dp, vertical = 2.dp)
+                        ) {
+                            Text("Grade 10", fontSize = 9.sp, fontWeight = FontWeight.SemiBold, color = Color(0xFFCBD5E1))
+                        }
+
+                        Box(
+                            modifier = Modifier
+                                .align(Alignment.Center)
+                                .size(40.dp)
+                                .clip(CircleShape)
+                                .background(Color(0xFF9333EA).copy(alpha = 0.3f))
+                                .border(1.5.dp, Color(0xFFC084FC), CircleShape),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text("👩‍🎓", fontSize = 20.sp)
+                        }
+
+                        Row(
+                            modifier = Modifier
+                                .align(Alignment.BottomCenter)
+                                .fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text("Maria_C", fontSize = 9.sp, fontWeight = FontWeight.Bold, color = Color.White)
+                            Icon(
+                                imageVector = Icons.Default.Mic,
+                                contentDescription = "Mic",
+                                tint = Color(0xFF34D399),
+                                modifier = Modifier.size(10.dp)
+                            )
+                        }
                     }
                 }
 
-                // Slot 2: Secondary Student Slot (Student_Maria)
-                Box(
-                    modifier = Modifier
-                        .weight(1f)
-                        .fillMaxSize()
-                        .clip(RoundedCornerShape(10.dp))
-                        .background(
-                            Brush.verticalGradient(
-                                colors = listOf(Color(0xFF581C87), Color(0xFF0F172A))
-                            )
-                        )
-                        .border(1.dp, Color(0xFF1E293B), RoundedCornerShape(10.dp)),
-                    contentAlignment = Alignment.Center
+                // Row 2: Prof_Mark (Instructor) & Alex_Dev
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(6.dp)
                 ) {
-                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    // Tile 3: Prof_Mark (Instructor)
+                    Box(
+                        modifier = Modifier
+                            .weight(1f)
+                            .height(tileHeight)
+                            .clip(RoundedCornerShape(10.dp))
+                            .background(Color(0xFF0F172A))
+                            .border(1.dp, Color(0xFF1E293B), RoundedCornerShape(10.dp))
+                            .padding(6.dp)
+                    ) {
                         Box(
                             modifier = Modifier
-                                .size(42.dp)
+                                .align(Alignment.TopStart)
+                                .clip(RoundedCornerShape(4.dp))
+                                .background(Color(0xFFD97706)) // Amber-600
+                                .padding(horizontal = 5.dp, vertical = 2.dp)
+                        ) {
+                            Text("Instructor", fontSize = 9.sp, fontWeight = FontWeight.Bold, color = Color.White)
+                        }
+
+                        Box(
+                            modifier = Modifier
+                                .align(Alignment.Center)
+                                .size(40.dp)
                                 .clip(CircleShape)
-                                .background(Color(0xFF9333EA))
-                                .border(2.dp, Color(0xFFC084FC), CircleShape),
+                                .background(Color(0xFFD97706).copy(alpha = 0.3f))
+                                .border(1.5.dp, Color(0xFFFBBF24), CircleShape),
                             contentAlignment = Alignment.Center
                         ) {
-                            Text(
-                                text = "JS",
-                                fontSize = 14.sp,
-                                fontWeight = FontWeight.Bold,
-                                color = Color.White
-                            )
+                            Text("👨‍🏫", fontSize = 20.sp)
                         }
-                        Spacer(modifier = Modifier.height(6.dp))
-                        Box(
+
+                        Row(
                             modifier = Modifier
-                                .clip(RoundedCornerShape(4.dp))
-                                .background(Color(0xCC020617))
-                                .padding(horizontal = 6.dp, vertical = 2.dp)
+                                .align(Alignment.BottomCenter)
+                                .fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
                         ) {
-                            Text(
-                                text = "Student_Maria",
-                                fontSize = 10.sp,
-                                fontWeight = FontWeight.Bold,
-                                color = Color.White
+                            Text("Prof_Mark", fontSize = 9.sp, fontWeight = FontWeight.Bold, color = Color.White)
+                            Icon(
+                                imageVector = Icons.Default.MicOff,
+                                contentDescription = "Mic Muted",
+                                tint = Color(0xFFEF4444),
+                                modifier = Modifier.size(10.dp)
                             )
                         }
                     }
 
-                    // Mic Mute indicator
+                    // Tile 4: Alex_Dev
                     Box(
                         modifier = Modifier
-                            .align(Alignment.BottomEnd)
+                            .weight(1f)
+                            .height(tileHeight)
+                            .clip(RoundedCornerShape(10.dp))
+                            .background(Color(0xFF0F172A))
+                            .border(1.dp, Color(0xFF1E293B), RoundedCornerShape(10.dp))
                             .padding(6.dp)
-                            .clip(RoundedCornerShape(4.dp))
-                            .background(Color(0xCCEF4444))
-                            .padding(3.dp)
                     ) {
-                        Icon(
-                            imageVector = Icons.Default.MicOff,
-                            contentDescription = "Muted",
-                            tint = Color.White,
-                            modifier = Modifier.size(10.dp)
-                        )
+                        Box(
+                            modifier = Modifier
+                                .align(Alignment.TopStart)
+                                .clip(RoundedCornerShape(4.dp))
+                                .background(Color(0xFF1E293B))
+                                .padding(horizontal = 5.dp, vertical = 2.dp)
+                        ) {
+                            Text("Grade 10", fontSize = 9.sp, fontWeight = FontWeight.SemiBold, color = Color(0xFFCBD5E1))
+                        }
+
+                        Box(
+                            modifier = Modifier
+                                .align(Alignment.Center)
+                                .size(40.dp)
+                                .clip(CircleShape)
+                                .background(Color(0xFF059669).copy(alpha = 0.3f))
+                                .border(1.5.dp, Color(0xFF34D399), CircleShape),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text("👨‍💻", fontSize = 20.sp)
+                        }
+
+                        Row(
+                            modifier = Modifier
+                                .align(Alignment.BottomCenter)
+                                .fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text("Alex_Dev", fontSize = 9.sp, fontWeight = FontWeight.Bold, color = Color.White)
+                            Icon(
+                                imageVector = Icons.Default.Mic,
+                                contentDescription = "Mic",
+                                tint = Color(0xFF34D399),
+                                modifier = Modifier.size(10.dp)
+                            )
+                        }
                     }
                 }
             }
