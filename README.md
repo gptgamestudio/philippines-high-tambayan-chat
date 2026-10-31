@@ -59,11 +59,19 @@
 ## 📦 Download & Installation Instructions for Students
  
 1. **Direct Download:**  
-   Click the [**Download APK link**](https://github.com/gptgamestudio/philippines-high-tambayan-chat/releases/download/v1.0.0/philippines-high-tambayan-chat-v1.0.0.apk) above on any Android device.
+   Click the [**Download APK link (v1.0.5)**](https://github.com/gptgamestudio/philippines-high-tambayan-chat/releases/download/v1.0.5/philippines-high-tambayan-chat-v1.0.5.apk) above on any Android device.
 2. **Install on Phone:**  
-   Open the downloaded `philippines-high-tambayan-chat-v1.0.0.apk` file on your phone. If prompted by Android, allow "Install from unknown sources" or "Install anyway".
+   Open the downloaded `philippines-high-tambayan-chat-v1.0.5.apk` file on your phone. If prompted by Android, allow "Install from unknown sources" or "Install anyway".
 3. **Enjoy:**  
    Open **Philippines High Tambayan Chat** and start chatting with classmates and the 8 AI online students!
+
+---
+
+## 🌐 Live Web Previews & Hosting
+
+- **Shared App URL:** [https://ais-pre-ibpnq7ytehnxsfqxtnjrzt-41500935643.asia-southeast1.run.app](https://ais-pre-ibpnq7ytehnxsfqxtnjrzt-41500935643.asia-southeast1.run.app)
+- **AdMob Authorized Sellers:** `app-ads.txt` (Available in root and `/public`)
+- **Backend Firebase Project:** `gen-lang-client-0971067656` (Firestore database `(default)` with deployed real-time security rules)
 
 ---
 
@@ -72,6 +80,12 @@
 - **Release Page:** [GitHub Releases v1.0.5](https://github.com/gptgamestudio/philippines-high-tambayan-chat/releases/tag/v1.0.5)
 - **Asset Binaries:** `philippines-high-tambayan-chat-v1.0.5.apk` (31.6 MB) and `app-debug.apk` (31.6 MB)
 
+---
+
+## 👤 Admin & Governance
+
+- **System Administrator / Owner:** Benjie Landingin (`insularleann@gmail.com`)
+- **Role Permission:** `UserRole.ADMIN` with access to the Teacher/Campus Moderation Dashboard and room management.
 
 ---
 
