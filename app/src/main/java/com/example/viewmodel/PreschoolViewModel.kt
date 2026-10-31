@@ -27,6 +27,8 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
+import com.example.model.TambayanFriend
+import com.example.model.PrivateChatMessage
 import kotlinx.coroutines.launch
 
 enum class ScreenState {
@@ -41,7 +43,8 @@ enum class ScreenState {
     PLAY_AND_EARN,
     ADMIN_DASHBOARD,
     SAFETY_POLICY,
-    CAMPUS_TRIVIA
+    CAMPUS_TRIVIA,
+    FRIENDS_PRIVATE_CHAT
 }
 
 enum class AppLanguage(val label: String, val flag: String) {
@@ -93,7 +96,13 @@ data class TambayanUiState(
 
     // Real-Time Auto-Update & Features Distribution
     val appUpdateInfo: com.example.repository.AppUpdateInfo = com.example.repository.AppUpdateInfo(),
-    val isUpdateDialogDismissed: Boolean = false
+    val isUpdateDialogDismissed: Boolean = false,
+
+    // Friends & Private 1-on-1 Chat / Video Call (Only Selected Friends)
+    val friendsList: List<TambayanFriend> = emptyList(),
+    val activePrivateFriend: TambayanFriend? = null,
+    val privateMessagesMap: Map<String, List<PrivateChatMessage>> = emptyMap(),
+    val isPrivateVideoCallOpen: Boolean = false
 ) {
     val activeRoomMessages: List<ChatMessage>
         get() {
@@ -163,6 +172,26 @@ class TambayanViewModel(application: Application) : AndroidViewModel(application
             StudentProfile(alias = "", avatar = "😎", strand = HighSchoolStrand.SHS_STEM, tambayStars = 25)
         }
 
+        val initialFriends = listOf(
+            TambayanFriend("f_alex", "Alex_Gamer", "🎮", HighSchoolStrand.SHS_TVL, true, "G sa ML mamayang uwian!", 1),
+            TambayanFriend("f_bea", "Bea_Valedictorian", "📚", HighSchoolStrand.SHS_STEM, true, "Reviewing for Pre-Cal exam", 0),
+            TambayanFriend("f_maria", "Maria Santos", "🎀", HighSchoolStrand.GRADE_10, true, "Online sa room! Kamusta?", 0),
+            TambayanFriend("f_juan", "Juan Dela Cruz", "🧢", HighSchoolStrand.SHS_STEM, true, "Exploring Android & Kotlin", 0),
+            TambayanFriend("f_dianne", "Dianne_Music", "🎵", HighSchoolStrand.SHS_HUMSS, false, "Jamming sa BINI songs", 0)
+        )
+
+        val initialPrivateMessages = mapOf(
+            "f_alex" to listOf(
+                PrivateChatMessage("pm_1_1", "f_alex", "Alex_Gamer", "🎮", "Pre laro tayo mamayang 5pm! Kailangan namin ng magaling na mage.", "12:15 PM", false),
+                PrivateChatMessage("pm_1_2", "f_alex", "You", "😎", "Sige pre, tapusin ko lang itong reviewer sa lab tapos g tayo!", "12:18 PM", true),
+                PrivateChatMessage("pm_1_3", "f_alex", "Alex_Gamer", "🎮", "Nice! Pwede rin tayo mag-private video call para sa comms habang naglalaro.", "12:20 PM", false)
+            ),
+            "f_bea" to listOf(
+                PrivateChatMessage("pm_2_1", "f_bea", "Bea_Valedictorian", "📚", "Hello! Paki-check yung study notes na pinasa ko kanina kung may kulang.", "11:30 AM", false),
+                PrivateChatMessage("pm_2_2", "f_bea", "You", "😎", "Salamat Bea! Kumpleto at napakalinaw ng mga formulas.", "11:35 AM", true)
+            )
+        )
+
         _uiState = MutableStateFlow(
             TambayanUiState(
                 currentScreen = ScreenState.SPLASH,
@@ -175,7 +204,9 @@ class TambayanViewModel(application: Application) : AndroidViewModel(application
                 activeRoomId = "lobby",
                 safetyPolicies = tambayanRepo.safetyPolicies,
                 campusTriviaList = tambayanRepo.campusTriviaList,
-                adSystemState = adManager.state.value
+                adSystemState = adManager.state.value,
+                friendsList = initialFriends,
+                privateMessagesMap = initialPrivateMessages
             )
         )
         uiState = _uiState.asStateFlow()
@@ -720,6 +751,127 @@ class TambayanViewModel(application: Application) : AndroidViewModel(application
         features: List<String>
     ) {
         tambayanRepo.publishAppUpdate(versionCode, versionName, apkUrl, title, notes, features)
+    }
+
+    // ==========================================
+    // FRIENDS & PRIVATE 1-ON-1 CHAT / VIDEO CALL
+    // ==========================================
+    fun addFriend(
+        alias: String,
+        avatar: String,
+        strand: HighSchoolStrand = HighSchoolStrand.SHS_STEM,
+        statusBio: String = "Kasama sa barkada ✨"
+    ) {
+        val current = _uiState.value.friendsList
+        if (current.any { it.alias.equals(alias, ignoreCase = true) }) return
+        val newFriend = TambayanFriend(
+            id = "friend_${System.currentTimeMillis()}",
+            alias = alias,
+            avatar = avatar,
+            strand = strand,
+            isOnline = true,
+            statusBio = statusBio
+        )
+        _uiState.update { it.copy(friendsList = listOf(newFriend) + current) }
+        soundManager.playPop()
+    }
+
+    fun removeFriend(friendId: String) {
+        _uiState.update { state ->
+            state.copy(
+                friendsList = state.friendsList.filterNot { it.id == friendId },
+                activePrivateFriend = if (state.activePrivateFriend?.id == friendId) null else state.activePrivateFriend
+            )
+        }
+    }
+
+    fun openPrivateChat(friend: TambayanFriend) {
+        _uiState.update {
+            it.copy(
+                activePrivateFriend = friend,
+                currentScreen = ScreenState.FRIENDS_PRIVATE_CHAT
+            )
+        }
+    }
+
+    fun closePrivateChat() {
+        _uiState.update {
+            it.copy(activePrivateFriend = null, isPrivateVideoCallOpen = false)
+        }
+    }
+
+    fun sendPrivateMessage(friendId: String, text: String) {
+        if (text.isBlank()) return
+        val userProfile = _uiState.value.studentProfile
+        val timeFormat = java.text.SimpleDateFormat("h:mm a", java.util.Locale.getDefault())
+        val timeStr = timeFormat.format(java.util.Date())
+        val newMsg = PrivateChatMessage(
+            id = "pmsg_${System.currentTimeMillis()}",
+            friendId = friendId,
+            senderName = userProfile.alias,
+            senderAvatar = userProfile.avatar,
+            messageText = text.trim(),
+            timestamp = timeStr,
+            isUser = true
+        )
+        _uiState.update { state ->
+            val currentMap = state.privateMessagesMap.toMutableMap()
+            val list = (currentMap[friendId] ?: emptyList()).toMutableList()
+            list.add(newMsg)
+            currentMap[friendId] = list
+            state.copy(privateMessagesMap = currentMap)
+        }
+
+        try {
+            val payload = mapOf(
+                "friendId" to friendId,
+                "senderName" to userProfile.alias,
+                "senderAvatar" to userProfile.avatar,
+                "messageText" to text.trim(),
+                "timestamp" to timeStr,
+                "timestampMillis" to System.currentTimeMillis()
+            )
+            db.collection("private_chats").document(friendId)
+                .collection("messages").document(newMsg.id)
+                .set(payload)
+        } catch (_: Exception) {}
+
+        viewModelScope.launch {
+            kotlinx.coroutines.delay(1200)
+            val friend = _uiState.value.friendsList.firstOrNull { it.id == friendId }
+            if (friend != null) {
+                val replyText = when {
+                    text.contains("video", ignoreCase = true) || text.contains("tawag", ignoreCase = true) || text.contains("call", ignoreCase = true) ->
+                        "G! Pindutin mo yung Private Video Call button sa taas para mag-usap tayo nang pribado! 📹✨"
+                    text.contains("kamusta", ignoreCase = true) ->
+                        "Ayos naman dito sa campus! Ikaw kamusta araw mo?"
+                    text.contains("homework", ignoreCase = true) || text.contains("aral", ignoreCase = true) ->
+                        "Kaya natin 'to! Patulong ka lang kung may tanong ka sa reviewer."
+                    else ->
+                        "Sige ka-tambay! Noted 'yan. Usap tayo ulit dito sa private chat! 👍✨"
+                }
+                val replyMsg = PrivateChatMessage(
+                    id = "pmsg_rep_${System.currentTimeMillis()}",
+                    friendId = friendId,
+                    senderName = friend.alias,
+                    senderAvatar = friend.avatar,
+                    messageText = replyText,
+                    timestamp = timeFormat.format(java.util.Date()),
+                    isUser = false
+                )
+                _uiState.update { state ->
+                    val currentMap = state.privateMessagesMap.toMutableMap()
+                    val list = (currentMap[friendId] ?: emptyList()).toMutableList()
+                    list.add(replyMsg)
+                    currentMap[friendId] = list
+                    state.copy(privateMessagesMap = currentMap)
+                }
+            }
+        }
+    }
+
+    fun togglePrivateVideoCall(isOpen: Boolean) {
+        _uiState.update { it.copy(isPrivateVideoCallOpen = isOpen) }
     }
 
     override fun onCleared() {

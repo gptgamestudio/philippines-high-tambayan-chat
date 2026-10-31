@@ -131,3 +131,28 @@ data class PinoyCampusTrivia(
     val explanation: String,
     val category: String
 )
+
+// ==========================================
+// PRIVATE FRIENDS & 1-ON-1 CHAT / VIDEO CALL
+// ==========================================
+
+data class TambayanFriend(
+    val id: String,
+    val alias: String,
+    val avatar: String,
+    val strand: HighSchoolStrand = HighSchoolStrand.SHS_STEM,
+    val isOnline: Boolean = true,
+    val statusBio: String = "Kasama sa barkada ✨",
+    val unreadCount: Int = 0
+)
+
+data class PrivateChatMessage(
+    val id: String,
+    val friendId: String,
+    val senderName: String,
+    val senderAvatar: String,
+    val messageText: String,
+    val timestamp: String,
+    val isUser: Boolean = false,
+    val isLiked: Boolean = false
+)

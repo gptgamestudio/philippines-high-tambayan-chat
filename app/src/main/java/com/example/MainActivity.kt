@@ -21,6 +21,7 @@ import com.example.ui.screens.AuthScreen
 import com.example.ui.screens.CampusTriviaScreen
 import com.example.ui.screens.ChatRoomScreen
 import com.example.ui.screens.CreateUsernameScreen
+import com.example.ui.screens.FriendsPrivateChatScreen
 import com.example.ui.screens.LoungeScreen
 import com.example.ui.screens.MainMenuScreen
 import com.example.ui.screens.PlayAndEarnScreen
@@ -201,7 +202,8 @@ class MainActivity : ComponentActivity() {
                                             onNextMusic = { viewModel.nextMusic() },
                                             onPreviousMusic = { viewModel.previousMusic() },
                                             onSelectMusic = { viewModel.selectMusic(it) },
-                                            onToggleMuteMusic = { viewModel.toggleMuteMusic() }
+                                            onToggleMuteMusic = { viewModel.toggleMuteMusic() },
+                                            onAddFriend = { alias, avatar -> viewModel.addFriend(alias, avatar) }
                                         )
                                     }
                                     ScreenState.SAFETY_POLICY -> {
@@ -213,6 +215,22 @@ class MainActivity : ComponentActivity() {
                                             onAcceptPolicy = { viewModel.acceptSafetyPolicy() },
                                             onUnblockUser = { viewModel.unblockUser(it) },
                                             onBackClick = { viewModel.navigateBack() }
+                                        )
+                                    }
+                                    ScreenState.FRIENDS_PRIVATE_CHAT -> {
+                                        FriendsPrivateChatScreen(
+                                            friends = uiState.friendsList,
+                                            activeFriend = uiState.activePrivateFriend,
+                                            privateMessages = uiState.privateMessagesMap[uiState.activePrivateFriend?.id] ?: emptyList(),
+                                            studentProfile = uiState.studentProfile,
+                                            isPrivateVideoCallOpen = uiState.isPrivateVideoCallOpen,
+                                            onSelectFriend = { viewModel.openPrivateChat(it) },
+                                            onBackFromChat = { viewModel.closePrivateChat() },
+                                            onBackToDashboard = { viewModel.navigateTo(ScreenState.MAIN_MENU) },
+                                            onAddFriend = { alias, avatar, strand, bio -> viewModel.addFriend(alias, avatar, strand, bio) },
+                                            onRemoveFriend = { viewModel.removeFriend(it) },
+                                            onSendPrivateMessage = { friendId, text -> viewModel.sendPrivateMessage(friendId, text) },
+                                            onTogglePrivateVideoCall = { viewModel.togglePrivateVideoCall(it) }
                                         )
                                     }
                                     ScreenState.CAMPUS_TRIVIA -> {

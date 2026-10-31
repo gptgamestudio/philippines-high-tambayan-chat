@@ -50,6 +50,7 @@ import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.Mic
 import androidx.compose.material.icons.filled.MicOff
+import androidx.compose.material.icons.filled.PersonAdd
 import androidx.compose.material.icons.filled.Phone
 import androidx.compose.material.icons.filled.PhotoCamera
 import androidx.compose.material.icons.filled.Security
@@ -147,6 +148,7 @@ fun ChatRoomScreen(
     onPreviousMusic: () -> Unit = {},
     onSelectMusic: (Int) -> Unit = {},
     onToggleMuteMusic: () -> Unit = {},
+    onAddFriend: ((String, String) -> Unit)? = null,
     modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
@@ -1143,6 +1145,20 @@ fun ChatRoomScreen(
                             selectedMessageForAction = null
                         }
                     )
+
+                    // Option: Add Friend (if not self)
+                    if (!msg.isUser) {
+                        MessageOptionRow(
+                            icon = Icons.Default.PersonAdd,
+                            iconTint = Color(0xFF38BDF8),
+                            title = "I-add bilang Kaibigan (Add Friend)",
+                            onClick = {
+                                onAddFriend?.invoke(msg.senderName, msg.senderAvatar)
+                                Toast.makeText(context, "Si ${msg.senderName} ay idinagdag na sa iyong listahan ng mga Kaibigan!", Toast.LENGTH_SHORT).show()
+                                selectedMessageForAction = null
+                            }
+                        )
+                    }
 
                     // Option 5: Block User (if not self)
                     if (!msg.isUser) {

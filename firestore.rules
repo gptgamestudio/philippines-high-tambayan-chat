@@ -47,6 +47,11 @@ service cloud.firestore {
     match /admin/{adminDoc} {
       allow read, write: if true;
     }
+
+    // 7. Private Friends & 1-on-1 Messages (Selected Friends Only)
+    match /private_chats/{conversationId}/messages/{messageId} {
+      allow read, write: if true;
+    }
   }
 }
 

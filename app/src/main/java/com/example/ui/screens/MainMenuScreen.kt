@@ -342,6 +342,78 @@ fun MainMenuScreen(
             )
         }
 
+        // BARKADA & PRIVATE FRIENDS (1-ON-1 CHAT & PRIVATE VIDEO CALL)
+        item {
+            Card(
+                colors = CardDefaults.cardColors(containerColor = Color(0xFF0F172A)),
+                shape = RoundedCornerShape(18.dp),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .border(1.5.dp, Color(0xFF10B981), RoundedCornerShape(18.dp))
+                    .clickable { onNavigateTo(ScreenState.FRIENDS_PRIVATE_CHAT) }
+                    .testTag("card_barkada_friends_private")
+            ) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(14.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Row(
+                        modifier = Modifier.weight(1f),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .size(44.dp)
+                                .clip(CircleShape)
+                                .background(Color(0xFF059669).copy(alpha = 0.25f))
+                                .border(1.5.dp, Color(0xFF10B981), CircleShape),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text("👥", fontSize = 22.sp)
+                        }
+                        Spacer(modifier = Modifier.width(12.dp))
+                        Column {
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Text(
+                                    text = "Barkada & Private Friends",
+                                    fontSize = 14.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = Color.White
+                                )
+                                Spacer(modifier = Modifier.width(6.dp))
+                                Box(
+                                    modifier = Modifier
+                                        .clip(RoundedCornerShape(6.dp))
+                                        .background(Color(0xFF10B981))
+                                        .padding(horizontal = 5.dp, vertical = 2.dp)
+                                ) {
+                                    Text("🔒 Selected Friends", fontSize = 9.sp, color = Color.White, fontWeight = FontWeight.Bold)
+                                }
+                            }
+                            Spacer(modifier = Modifier.height(2.dp))
+                            Text(
+                                text = "1-on-1 Private Chat at Dedicated Private Video Call para sa mga piling kaibigan lamang.",
+                                fontSize = 11.sp,
+                                color = Color(0xFFCBD5E1)
+                            )
+                        }
+                    }
+
+                    Box(
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(10.dp))
+                            .background(Color(0xFF10B981))
+                            .padding(horizontal = 10.dp, vertical = 6.dp)
+                    ) {
+                        Text("Buksan ➡️", fontSize = 11.sp, fontWeight = FontWeight.Bold, color = Color.White)
+                    }
+                }
+            }
+        }
+
         // CAMPUS SAFETY & POLICY BADGE
         item {
             Card(
