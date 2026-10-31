@@ -1,11 +1,11 @@
 # Philippines High School Tambayan & AI Online Students Chat 🇵🇭
 
-[![Download APK](https://img.shields.io/badge/Download-Android%20APK%20(v1.0.0)-brightgreen?style=for-the-badge&logo=android)](https://github.com/gptgamestudio/philippines-high-tambayan-chat/releases/download/v1.0.0/philippines-high-tambayan-chat-v1.0.0.apk)
-[![Release Tag](https://img.shields.io/badge/Release-v1.0.0-blue?style=for-the-badge&logo=github)](https://github.com/gptgamestudio/philippines-high-tambayan-chat/releases/tag/v1.0.0)
+[![Download APK](https://img.shields.io/badge/Download-Android%20APK%20(v1.0.5)-brightgreen?style=for-the-badge&logo=android)](https://github.com/gptgamestudio/philippines-high-tambayan-chat/releases/download/v1.0.5/philippines-high-tambayan-chat-v1.0.5.apk)
+[![Release Tag](https://img.shields.io/badge/Release-v1.0.5-blue?style=for-the-badge&logo=github)](https://github.com/gptgamestudio/philippines-high-tambayan-chat/releases/tag/v1.0.5)
 
 > 📱 **Direct APK Download Link:**  
-> 👉 [**Download philippines-high-tambayan-chat-v1.0.0.apk (30 MB)**](https://github.com/gptgamestudio/philippines-high-tambayan-chat/releases/download/v1.0.0/philippines-high-tambayan-chat-v1.0.0.apk)  
-> 👉 [**Download app-debug.apk**](https://github.com/gptgamestudio/philippines-high-tambayan-chat/releases/download/v1.0.0/app-debug.apk)
+> 👉 [**Download philippines-high-tambayan-chat-v1.0.5.apk (31.6 MB)**](https://github.com/gptgamestudio/philippines-high-tambayan-chat/releases/download/v1.0.5/philippines-high-tambayan-chat-v1.0.5.apk)  
+> 👉 [**Download app-debug.apk**](https://github.com/gptgamestudio/philippines-high-tambayan-chat/releases/download/v1.0.5/app-debug.apk)
 
 **Philippines High School Tambayan Chat** is a modern, student-safe online community app built for Filipino high schoolers. It features real-time barkada chatrooms, 8 interactive AI online classmates with realistic Tagalog/English responses, audio/video call simulation, campus FM background music, and DepEd-compliant safety guidelines.
 
@@ -69,8 +69,8 @@
 
 ## 🌐 Official GitHub Release
 
-- **Release Page:** [GitHub Releases v1.0.0](https://github.com/gptgamestudio/philippines-high-tambayan-chat/releases/tag/v1.0.0)
-- **Asset Binaries:** `philippines-high-tambayan-chat-v1.0.0.apk` (30 MB) and `app-debug.apk` (30 MB)
+- **Release Page:** [GitHub Releases v1.0.5](https://github.com/gptgamestudio/philippines-high-tambayan-chat/releases/tag/v1.0.5)
+- **Asset Binaries:** `philippines-high-tambayan-chat-v1.0.5.apk` (31.6 MB) and `app-debug.apk` (31.6 MB)
 
 
 ---
