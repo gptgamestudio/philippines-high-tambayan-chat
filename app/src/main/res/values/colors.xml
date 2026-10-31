@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- User's Pastel Preschool Palette -->
+    <color name="pastel_mint_green">#A8E6CF</color>
+    <color name="pastel_yellow_sunshine">#FFD3B6</color>
+    <color name="pastel_sky_blue">#A8DADC</color>
+    <color name="pastel_coral_pink">#FF8B94</color>
+    <color name="pastel_lilac_purple">#D6C7E8</color>
+    <color name="pastel_tangerine">#FFAAA6</color>
+    <color name="pastel_slate_dark">#2F3E46</color>
+
+    <color name="kid_background">#A8E6CF</color>
+    <color name="kid_dark">#2F3E46</color>
+    <color name="kid_yellow">#FFD3B6</color>
+    <color name="kid_coral">#FF8B94</color>
+    <color name="kid_green">#81C784</color>
+    <color name="kid_blue">#A8DADC</color>
+    <color name="kid_purple">#D6C7E8</color>
+    <color name="kid_orange">#FFAAA6</color>
+    <color name="white">#FFFFFFFF</color>
+    <color name="black">#FF000000</color>
+</resources>

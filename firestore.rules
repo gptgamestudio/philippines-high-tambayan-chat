@@ -1,0 +1,52 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // 1. Primary Direct Messages Collection (Web & Mobile Real-time Chat)
+    match /messages/{messageId} {
+      allow read: if true;
+      allow create: if request.resource.data.text is string
+        && request.resource.data.text.size() > 0
+        && request.resource.data.text.size() <= 2000;
+      allow update: if request.resource.data.text is string
+        && request.resource.data.text.size() <= 2000;
+      allow delete: if true;
+    }
+
+    // 2. Room-based Messages (Tambayan Room Categories: lobby, hs_life, hugot, study, gaming, opm)
+    match /rooms/{roomId}/messages/{messageId} {
+      allow read: if true;
+      allow create: if request.resource.data.messageText is string
+        && request.resource.data.messageText.size() > 0
+        && request.resource.data.messageText.size() <= 2000;
+      allow update: if true;
+      allow delete: if true;
+    }
+
+    // 3. Student Profiles & Badges
+    match /users/{userId} {
+      allow read: if true;
+      allow write: if request.resource.data.alias is string;
+    }
+
+    // 4. Campus Safety & Anti-Bullying Moderation (RA 10627 DepEd Safety)
+    match /reports/{reportId} {
+      allow read: if true;
+      allow create: if request.resource.data.messageId is string
+        && request.resource.data.reason is string;
+      allow update, delete: if true;
+    }
+
+    // 5. System Announcements & Campus FM Station Settings
+    match /settings/{settingId} {
+      allow read: if true;
+      allow write: if true;
+    }
+
+    // 6. Master Administrator Access (Lead: Benjie Landingin - Code: 100877)
+    match /admin/{adminDoc} {
+      allow read, write: if true;
+    }
+  }
+}
+

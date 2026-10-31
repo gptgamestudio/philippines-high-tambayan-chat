@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="tl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pro Student Dashboard & Multi-Room Chat Hub</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen font-sans">
+
+    <!-- Top Navigation Switcher -->
+    <header class="bg-slate-900 border-b border-slate-800 px-4 py-3 flex flex-wrap justify-between items-center sticky top-0 z-50">
+        <div class="flex items-center space-x-3">
+            <div class="w-10 h-10 rounded-xl bg-blue-600 flex items-center justify-center shadow-lg shadow-blue-500/30">
+                <i class="fa-solid fa-graduation-cap text-white text-lg"></i>
+            </div>
+            <div>
+                <h1 class="font-bold text-base tracking-wide text-white">Campus Hub PH</h1>
+                <p class="text-xs text-slate-400">benjie1978 • Grade 10 Completer</p>
+            </div>
+        </div>
+        
+        <div class="flex items-center space-x-2 mt-2 sm:mt-0">
+            <button onclick="switchView('mainDashboard')" id="btnMainDash" class="px-4 py-2 rounded-xl text-xs font-semibold bg-blue-600 text-white shadow-md transition hover:bg-blue-500 flex items-center space-x-2">
+                <i class="fa-solid fa-house"></i>
+                <span>Main Dashboard</span>
+            </button>
+            <button onclick="switchView('studentDash')" id="btnStudentDash" class="px-4 py-2 rounded-xl text-xs font-semibold bg-slate-800 text-slate-300 hover:bg-slate-700 transition flex items-center space-x-2">
+                <i class="fa-solid fa-comments"></i>
+                <span>Student Dash & Chatrooms</span>
+            </button>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <main class="p-4 max-w-7xl mx-auto">
+
+        <!-- VIEW 1: MAIN DASHBOARD -->
+        <section id="mainDashboard" class="space-y-6">
+            <div class="bg-gradient-to-r from-blue-900/40 via-slate-900 to-indigo-950/40 border border-slate-800 rounded-2xl p-6 shadow-xl">
+                <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                    <div>
+                        <span class="bg-blue-500/20 text-blue-400 text-xs px-3 py-1 rounded-full font-medium border border-blue-500/30">100% Libreng Chat Tambayan</span>
+                        <h2 class="text-2xl md:text-3xl font-extrabold text-white mt-2">Maligayang Pagbabalik, Benjie!</h2>
+                        <p class="text-slate-400 text-sm mt-1">Pumili ng room o pamahalaan ang iyong mga aktibidad sa iba't ibang chat rooms nang walang bayad.</p>
+                    </div>
+                    <button onclick="switchView('studentDash')" class="px-5 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-bold rounded-xl shadow-lg shadow-blue-600/30 hover:scale-105 transition">
+                        <i class="fa-solid fa-rocket mr-2"></i> Buksan ang Chat Rooms
+                    </button>
+                </div>
+            </div>
+
+            <!-- Stats Grid -->
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div class="bg-slate-900/80 border border-slate-800 p-4 rounded-2xl">
+                    <div class="text-blue-400 text-sm font-semibold flex items-center justify-between">
+                        <span>Aktibong Rooms</span>
+                        <i class="fa-solid fa-door-open"></i>
+                    </div>
+                    <div class="text-2xl font-black mt-2 text-white">7 Rooms</div>
+                    <div class="text-xs text-slate-400 mt-1">Lahat online & libre</div>
+                </div>
+                <div class="bg-slate-900/80 border border-slate-800 p-4 rounded-2xl">
+                    <div class="text-emerald-400 text-sm font-semibold flex items-center justify-between">
+                        <span>Online Students</span>
+                        <i class="fa-solid fa-users"></i>
+                    </div>
+                    <div class="text-2xl font-black mt-2 text-white">1,428</div>
+                    <div class="text-xs text-emerald-400 mt-1">Active ngayon</div>
+                </div>
+                <div class="bg-slate-900/80 border border-slate-800 p-4 rounded-2xl">
+                    <div class="text-amber-400 text-sm font-semibold flex items-center justify-between">
+                        <span>Video Calls</span>
+                        <i class="fa-solid fa-video"></i>
+                    </div>
+                    <div class="text-2xl font-black mt-2 text-white">34 Rooms</div>
+                    <div class="text-xs text-slate-400 mt-1">Tuloy-tuloy ang aral</div>
+                </div>
+                <div class="bg-slate-900/80 border border-slate-800 p-4 rounded-2xl">
+                    <div class="text-purple-400 text-sm font-semibold flex items-center justify-between">
+                        <span>Files / APK Shared</span>
+                        <i class="fa-solid fa-file-arrow-down"></i>
+                    </div>
+                    <div class="text-2xl font-black mt-2 text-white">520+</div>
+                    <div class="text-xs text-purple-400 mt-1">Na-download na</div>
+                </div>
+            </div>
+
+            <!-- Rooms List Preview (6-7 Rooms) -->
+            <div>
+                <h3 class="text-lg font-bold mb-4 text-white flex items-center"><i class="fa-solid fa-layer-group text-blue-500 mr-2"></i> Piliin ang iyong Chat Room (6-7 Rooms)</h3>
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4" id="mainRoomGrid">
+                    <!-- Dynamic populated via JS or static cards -->
+                </div>
+            </div>
+        </section>
+
+        <!-- VIEW 2: STUDENT DASHBOARD & PRO CHAT ROOM -->
+        <section id="studentDash" class="hidden space-y-4">
+            
+            <!-- Room Navigation Bar (6-7 Rooms Switcher) -->
+            <div class="bg-slate-900 p-3 rounded-2xl border border-slate-800 flex overflow-x-auto space-x-2 scrollbar-none" id="roomTabsContainer">
+                <!-- Rooms buttons injected dynamically -->
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+                
+                <!-- Left/Center: Video Call Square & Chat Space -->
+                <div class="lg:col-span-2 space-y-4">
+                    
+                    <!-- Video Call Square Box (Main Video + Controls) -->
+                    <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 relative overflow-hidden shadow-2xl">
+                        <div class="flex justify-between items-center mb-3">
+                            <div class="flex items-center space-x-2">
+                                <span class="w-3 h-3 bg-red-500 rounded-full animate-pulse"></span>
+                                <span class="font-bold text-sm text-white" id="currentRoomTitle">General Tambayan</span>
+                            </div>
+                            <div class="flex items-center space-x-1 text-xs bg-slate-800 px-3 py-1 rounded-lg text-slate-300">
+                                <i class="fa-solid fa-user-group text-blue-400 mr-1"></i> <span id="onlineCount">24</span> Online
+                            </div>
+                        </div>
+
+                        <!-- Video Feed Grid -->
+                        <div class="grid grid-cols-2 gap-3 h-56 sm:h-64 bg-slate-950 rounded-xl p-2 border border-slate-800/80 relative">
+                            <!-- Main Stream Slot -->
+                            <div class="relative bg-slate-900 rounded-lg flex items-center justify-center overflow-hidden border border-slate-800">
+                                <div class="absolute inset-0 bg-cover bg-center opacity-40" style="background-image: url('https://images.unsplash.com/photo-1523240795612-9a054b0db644?auto=format&fit=crop&w=600&q=80')"></div>
+                                <div class="z-10 text-center">
+                                    <div class="w-14 h-14 mx-auto rounded-full bg-blue-600/80 flex items-center justify-center border-2 border-blue-400 shadow-lg">
+                                        <i class="fa-solid fa-user-サングラス text-xl text-white"></i>
+                                    </div>
+                                    <span class="text-xs font-bold mt-2 block bg-slate-950/80 px-2 py-0.5 rounded text-white">benjie1978 (Host)</span>
+                                </div>
+                                <div class="absolute top-2 left-2 bg-black/60 px-2 py-0.5 rounded text-[10px] text-emerald-400 font-mono">LIVE 1080p</div>
+                            </div>
+
+                            <!-- Secondary Student Video Slot -->
+                            <div class="relative bg-slate-900 rounded-lg flex items-center justify-center overflow-hidden border border-slate-800">
+                                <div class="z-10 text-center">
+                                    <div class="w-12 h-12 mx-auto rounded-full bg-purple-600/80 flex items-center justify-center border-2 border-purple-400">
+                                        <span class="font-bold text-white text-sm">JS</span>
+                                    </div>
+                                    <span class="text-xs font-bold mt-1 block bg-slate-950/80 px-2 py-0.5 rounded text-white">Student_Maria</span>
+                                </div>
+                                <div class="absolute bottom-2 right-2 flex space-x-1">
+                                    <span class="bg-red-500/80 p-1 rounded text-[9px]"><i class="fa-solid fa-microphone-slash text-white"></i></span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Video Controls Toolbar (Zoom, Pause/Play, Camera, Mute, Share) -->
+                        <div class="flex flex-wrap items-center justify-center gap-2 mt-3 pt-3 border-t border-slate-800">
+                            <button onclick="toggleVideo()" id="camBtn" class="p-2.5 bg-slate-800 hover:bg-slate-700 text-blue-400 rounded-xl text-sm transition" title="Camera Toggle"><i class="fa-solid fa-video"></i></button>
+                            <button onclick="toggleAudio()" id="micBtn" class="p-2.5 bg-slate-800 hover:bg-slate-700 text-emerald-400 rounded-xl text-sm transition" title="Audio Mute/Unmute"><i class="fa-solid fa-microphone"></i></button>
+                            <button onclick="toggleZoom()" class="p-2.5 bg-slate-800 hover:bg-slate-700 text-amber-400 rounded-xl text-sm transition" title="Zoom View"><i class="fa-solid fa-magnifying-glass-plus"></i></button>
+                            <button onclick="togglePausePlay()" id="pauseBtn" class="p-2.5 bg-slate-800 hover:bg-slate-700 text-purple-400 rounded-xl text-sm transition" title="Pause / Play Stream"><i class="fa-solid fa-pause"></i></button>
+                            <button onclick="shareAppInvite()" class="p-2.5 bg-blue-600 hover:bg-blue-500 text-white rounded-xl text-sm transition font-semibold flex items-center space-x-1 px-3">
+                                <i class="fa-solid fa-share-nodes"></i> <span class="text-xs">Invite</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Pro Chatroom Box -->
+                    <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 flex flex-col h-96 shadow-2xl">
+                        <div class="flex justify-between items-center pb-3 border-b border-slate-800">
+                            <h3 class="font-bold text-sm text-white flex items-center">
+                                <i class="fa-solid fa-comments text-blue-500 mr-2"></i> Pro Chatroom Feed
+                            </h3>
+                            <span class="text-[10px] bg-emerald-500/20 text-emerald-400 px-2 py-0.5 rounded-full border border-emerald-500/30">Secure & Encrypted</span>
+                        </div>
+
+                        <!-- Chat Messages List -->
+                        <div id="chatMessages" class="flex-1 overflow-y-auto space-y-3 py-3 pr-2 text-sm scrollbar-thin">
+                            <div class="flex items-start space-x-2">
+                                <div class="w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center font-bold text-xs text-white">BP</div>
+                                <div class="bg-slate-800/80 rounded-xl p-3 max-w-[80%] border border-slate-700/50">
+                                    <div class="flex items-center space-x-2 mb-1">
+                                        <span class="font-bold text-xs text-blue-400">benjie1978</span>
+                                        <span class="text-[9px] bg-blue-500/20 text-blue-300 px-1.5 py-0.2 rounded">Moderator</span>
+                                        <span class="text-[10px] text-slate-400">12:30 PM</span>
+                                    </div>
+                                    <p class="text-slate-200 text-xs">Mabuhay mga ka-tambay! Maligayang pagdating sa ating bagong pro chatroom system.</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Chat Input Toolbar (Text, APK, Camera, Audio, Gifts, Emojis) -->
+                        <div class="pt-3 border-t border-slate-800 flex items-center space-x-2">
+                            <div class="flex items-center space-x-1 text-slate-400">
+                                <button onclick="attachFile('camera')" class="p-2 hover:text-white transition" title="Camera Photo"><i class="fa-solid fa-camera text-sm"></i></button>
+                                <button onclick="attachFile('apk')" class="p-2 hover:text-white transition" title="Attach APK / File"><i class="fa-solid fa-paperclip text-sm"></i></button>
+                                <button onclick="openGifts()" class="p-2 hover:text-amber-400 transition" title="Send Gift"><i class="fa-solid fa-gift text-sm"></i></button>
+                                <button onclick="toggleEmoji()" class="p-2 hover:text-yellow-400 transition" title="Emojis"><i class="fa-solid fa-face-smile text-sm"></i></button>
+                            </div>
+
+                            <input type="text" id="chatInput" placeholder="Chat here..." onkeypress="handleKey(event)" class="flex-1 bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-xs text-white focus:outline-none focus:border-blue-500">
+                            
+                            <button onclick="sendMessage()" class="bg-blue-600 hover:bg-blue-500 text-white px-4 py-2.5 rounded-xl text-xs font-bold transition shadow-md">
+                                <i class="fa-solid fa-paper-plane"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right Sidebar: Room Details & Active Students -->
+                <div class="space-y-4">
+                    <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 shadow-xl">
+                        <h4 class="font-bold text-sm text-white mb-3 flex items-center"><i class="fa-solid fa-circle-info text-blue-400 mr-2"></i> Impormasyon ng Room</h4>
+                        <p class="text-xs text-slate-400 leading-relaxed mb-4" id="roomDescription">
+                            Isang desenteng tambayan para sa mga estudyante upang magbahagi ng homework help, talakayan, at live video sessions. Zero-tolerance sa cyberbullying.
+                        </p>
+                        <div class="space-y-2 border-t border-slate-800 pt-3">
+                            <div class="flex justify-between text-xs text-slate-300">
+                                <span>Uri ng Tambayan:</span>
+                                <span class="font-semibold text-white">Public & Free</span>
+                            </div>
+                            <div class="flex justify-between text-xs text-slate-300">
+                                <span>Interstitial Ads:</span>
+                                <span class="font-semibold text-emerald-400">Bawat 5 Mensahe</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 shadow-xl">
+                        <h4 class="font-bold text-sm text-white mb-3 flex items-center justify-between">
+                            <span><i class="fa-solid fa-users text-purple-400 mr-2"></i> Mga Kasama sa Room</span>
+                            <span class="text-xs bg-purple-500/20 text-purple-300 px-2 py-0.5 rounded-full">Active</span>
+                        </h4>
+                        <div class="space-y-2.5 max-h-56 overflow-y-auto pr-1" id="activeMembersList">
+                            <!-- Populated by JS -->
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+    </main>
+
+    <!-- JavaScript Logic for Multi-Room & Interactive Controls -->
+    <script>
+        // 7 Rooms Data
+        const rooms = [
+            { id: 1, name: "General Tambayan", icon: "fa-comments", online: 42, desc: "Pangkalahatang talakayan at kwentuhan ng mga estudyante." },
+            { id: 2, name: "Campus Lounge", icon: "fa-school", online: 28, desc: "Tambayan malapit sa canteen at campus grounds." },
+            { id: 3, name: "Homework Help PH", icon: "fa-book-open", online: 55, desc: "Tulungan sa takdang-aralin at mga proyekto sa eskuwela." },
+            { id: 4, name: "BarkadaTambay", icon: "fa-user-group", online: 19, desc: "Masayang kwentuhan ng barkada at tropa." },
+            { id: 5, name: "Science & Tech Lab", icon: "fa-flask", online: 31, desc: "Diskusyon tungkol sa agham, coding, at teknolohiya." },
+            { id: 6, name: "Math Wizards", icon: "fa-square-root-variable", online: 24, desc: "Lutasin ang mga math equations at formula nang sama-sama." },
+            { id: 7, name: "Arts & Culture Hub", icon: "fa-palette", online: 15, desc: "Disenyo, sining, at pagpapalitan ng malikhaing ideya." }
+        ];
+
+        let currentRoomId = 1;
+
+        // Initialize UI
+        window.onload = function() {
+            renderMainDashboardRooms();
+            renderRoomTabs();
+            updateActiveMembers();
+        };
+
+        function switchView(viewId) {
+            document.getElementById('mainDashboard').classList.add('hidden');
+            document.getElementById('studentDash').classList.add('hidden');
+            document.getElementById('btnMainDash').className = "px-4 py-2 rounded-xl text-xs font-semibold bg-slate-800 text-slate-300 hover:bg-slate-700 transition flex items-center space-x-2";
+            document.getElementById('btnStudentDash').className = "px-4 py-2 rounded-xl text-xs font-semibold bg-slate-800 text-slate-300 hover:bg-slate-700 transition flex items-center space-x-2";
+
+            if(viewId === 'mainDashboard') {
+                document.getElementById('mainDashboard').classList.remove('hidden');
+                document.getElementById('btnMainDash').className = "px-4 py-2 rounded-xl text-xs font-semibold bg-blue-600 text-white shadow-md transition flex items-center space-x-2";
+            } else {
+                document.getElementById('studentDash').classList.remove('hidden');
+                document.getElementById('btnStudentDash').className = "px-4 py-2 rounded-xl text-xs font-semibold bg-blue-600 text-white shadow-md transition flex items-center space-x-2";
+            }
+        }
+
+        function renderMainDashboardRooms() {
+            const grid = document.getElementById('mainRoomGrid');
+            grid.innerHTML = rooms.map(r => `
+                <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 hover:border-blue-500/50 transition cursor-pointer flex flex-col justify-between" onclick="selectRoom(${r.id})">
+                    <div>
+                        <div class="flex justify-between items-center mb-3">
+                            <span class="w-10 h-10 rounded-xl bg-blue-500/10 text-blue-400 flex items-center justify-center font-bold"><i class="fa-solid ${r.icon}"></i></span>
+                            <span class="text-xs bg-emerald-500/20 text-emerald-400 px-2 py-0.5 rounded-full font-medium">${r.online} online</span>
+                        </div>
+                        <h4 class="font-bold text-white text-base">${r.name}</h4>
+                        <p class="text-xs text-slate-400 mt-1">${r.desc}</p>
+                    </div>
+                    <button class="mt-4 w-full py-2 bg-slate-800 hover:bg-blue-600 text-slate-200 hover:text-white rounded-xl text-xs font-semibold transition flex items-center justify-center space-x-1">
+                        <span>Pumasok sa Room</span> <i class="fa-solid fa-arrow-right ml-1"></i>
+                    </button>
+                </div>
+            `).join('');
+        }
+
+        function renderRoomTabs() {
+            const container = document.getElementById('roomTabsContainer');
+            container.innerHTML = rooms.map(r => `
+                <button onclick="selectRoom(${r.id})" class="px-3.5 py-2 rounded-xl text-xs font-medium whitespace-nowrap transition flex items-center space-x-2 ${r.id === currentRoomId ? 'bg-blue-600 text-white font-bold shadow-md' : 'bg-slate-800 text-slate-300 hover:bg-slate-700'}">
+                    <i class="fa-solid ${r.icon}"></i>
+                    <span>${r.name}</span>
+                </button>
+            `).join('');
+        }
+
+        function selectRoom(id) {
+            currentRoomId = id;
+            const room = rooms.find(r => r.id === id);
+            document.getElementById('currentRoomTitle').innerText = room.name;
+            document.getElementById('onlineCount').innerText = room.online;
+            document.getElementById('roomDescription').innerText = room.desc;
+            renderRoomTabs();
+            switchView('studentDash');
+            addSystemMessage(`Naka-lipat ka na sa ${room.name}. Mag-ingat at mag-enjoy!`);
+        }
+
+        function updateActiveMembers() {
+            const members = [
+                { name: "benjie1978", role: "Host / Moderator", status: "online" },
+                { name: "Maria Santos", role: "Student", status: "video" },
+                { name: "Juan Dela Cruz", role: "Student", status: "online" },
+                { name: "Ana Reyes", role: "Mentor", status: "online" }
+            ];
+            const list = document.getElementById('activeMembersList');
+            list.innerHTML = members.map(m => `
+                <div class="flex items-center justify-between p-2 rounded-xl bg-slate-950/50 border border-slate-800/60">
+                    <div class="flex items-center space-x-2">
+                        <div class="w-7 h-7 rounded-full bg-slate-800 flex items-center justify-center text-xs font-bold text-blue-400">${m.name[0]}</div>
+                        <div>
+                            <span class="text-xs font-semibold text-slate-200 block">${m.name}</span>
+                            <span class="text-[9px] text-slate-400">${m.role}</span>
+                        </div>
+                    </div>
+                    <span class="w-2 h-2 rounded-full ${m.status === 'video' ? 'bg-emerald-500 animate-pulse' : 'bg-blue-500'}"></span>
+                </div>
+            `).join('');
+        }
+
+        function sendMessage() {
+            const input = document.getElementById('chatInput');
+            if(!input.value.trim()) return;
+            
+            const chatMessages = document.getElementById('chatMessages');
+            chatMessages.innerHTML += `
+                <div class="flex items-start space-x-2">
+                    <div class="w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center font-bold text-xs text-white">BP</div>
+                    <div class="bg-slate-800/80 rounded-xl p-3 max-w-[80%] border border-slate-700/50">
+                        <div class="flex items-center space-x-2 mb-1">
+                            <span class="font-bold text-xs text-blue-400">benjie1978</span>
+                            <span class="text-[10px] text-slate-400">Ngayon lang</span>
+                        </div>
+                        <p class="text-slate-200 text-xs">${input.value}</p>
+                    </div>
+                </div>
+            `;
+            input.value = '';
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        function handleKey(e) { if(e.key === 'Enter') sendMessage(); }
+        function addSystemMessage(text) {
+            const chatMessages = document.getElementById('chatMessages');
+            chatMessages.innerHTML += `<div class="text-center my-2"><span class="text-[10px] bg-slate-800 text-slate-400 px-3 py-1 rounded-full">${text}</span></div>`;
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        // Action Buttons Simulation
+        function toggleVideo() { alert("Camera toggled."); }
+        function toggleAudio() { alert("Mic muted/unmuted."); }
+        function toggleZoom() { alert("Video grid zoomed in."); }
+        function togglePausePlay() { alert("Video stream paused/played."); }
+        function shareAppInvite() { alert("Na-kopya na ang link ng room para i-share sa mga kaibigan!"); }
+        function attachFile(type) { alert(`Nagbubukas ng ${type.toUpperCase()} attachment option...`); }
+        function openGifts() { alert("Nagbubukas ng Gift Store para makapagpadala ng regalo sa mga ka-tambay!"); }
+        function toggleEmoji() { alert("Binubuksan ang Emoji Picker."); }
+    </script>
+</body>
+</html>

@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "169643200220",
+    "project_id": "philippines-high-school-chat",
+    "storage_bucket": "philippines-high-school-chat.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:169643200220:android:ea83b88053b41da441ae19",
+        "android_client_info": {
+          "package_name": "com.aistudio.philippineshighschool.chat"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "169643200220-0rk139c1aun3qjs8qhpduvl3dqfj0v90.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.aistudio.philippineshighschool.chat",
+            "certificate_hash": "4ca4f67eaed08735c223cfc76472c91d141da2c7"
+          }
+        },
+        {
+          "client_id": "169643200220-a8edct52da4sqrt8sn2m1uicg750g4ot.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB4FwRLATEvAf5pDFkIV_M5DOoBYMdAW_Y"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "169643200220-a8edct52da4sqrt8sn2m1uicg750g4ot.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

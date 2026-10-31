@@ -1,0 +1,6 @@
+{
+  "name": "PHILIPPINES HIGH TAMBAYAN CHAT",
+  "description": "The ultimate online Philippine High School Tambayan & Barkada Chat lounge featuring 100% free chatrooms, fixed dashboard banner ads, interstitial sponsor breaks every 5 chats, Back and Next arrow navigation, campus safety policies, and student lounge.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

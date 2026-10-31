@@ -1,0 +1,85 @@
+{
+  "entities": {
+    "TambayanMessage": {
+      "title": "TambayanMessage",
+      "description": "Real-time student chat message in a campus tambayan room",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "roomId": { "type": "string" },
+        "senderId": { "type": "string" },
+        "senderName": { "type": "string" },
+        "senderAvatar": { "type": "string" },
+        "senderGradeBadge": { "type": "string" },
+        "messageText": { "type": "string" },
+        "timestamp": { "type": "string" },
+        "likesCount": { "type": "integer" },
+        "isLiked": { "type": "boolean" },
+        "isReported": { "type": "boolean" }
+      },
+      "required": ["roomId", "senderId", "senderName", "messageText"]
+    },
+    "StudentUser": {
+      "title": "StudentUser",
+      "description": "Authenticated student user profile and tambay statistics",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "email": { "type": "string" },
+        "alias": { "type": "string" },
+        "avatar": { "type": "string" },
+        "strand": { "type": "string" },
+        "bio": { "type": "string" },
+        "starsCount": { "type": "integer" },
+        "totalChatsSent": { "type": "integer" },
+        "role": { "type": "string", "enum": ["student", "admin"] }
+      },
+      "required": ["userId", "alias"]
+    },
+    "ReportedMessage": {
+      "title": "ReportedMessage",
+      "description": "Campus safety report for bullying, harassment, or policy violations",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "messageId": { "type": "string" },
+        "roomId": { "type": "string" },
+        "senderName": { "type": "string" },
+        "messageText": { "type": "string" },
+        "reason": { "type": "string" },
+        "reportedBy": { "type": "string" },
+        "reportedAt": { "type": "string" },
+        "status": { "type": "string" }
+      },
+      "required": ["messageId", "roomId", "reason", "reportedBy"]
+    },
+    "CampusAnnouncement": {
+      "title": "CampusAnnouncement",
+      "description": "System safety notices and broadcast announcements",
+      "type": "object",
+      "properties": {
+        "notice": { "type": "string" },
+        "updatedAt": { "type": "string" }
+      },
+      "required": ["notice"]
+    }
+  },
+  "firestore": {
+    "/rooms/{roomId}/messages/{messageId}": {
+      "schema": { "$ref": "#/entities/TambayanMessage" },
+      "description": "Real-time chat messages inside Tambayan chat rooms"
+    },
+    "/users/{userId}": {
+      "schema": { "$ref": "#/entities/StudentUser" },
+      "description": "Student user profile and preferences"
+    },
+    "/reports/{reportId}": {
+      "schema": { "$ref": "#/entities/ReportedMessage" },
+      "description": "Student moderation reports"
+    },
+    "/settings/{settingId}": {
+      "schema": { "$ref": "#/entities/CampusAnnouncement" },
+      "description": "Campus system announcements and settings"
+    }
+  }
+}
