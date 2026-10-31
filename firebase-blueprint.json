@@ -13,6 +13,7 @@
         "senderGradeBadge": { "type": "string" },
         "messageText": { "type": "string" },
         "timestamp": { "type": "string" },
+        "timestampMillis": { "type": "integer" },
         "likesCount": { "type": "integer" },
         "isLiked": { "type": "boolean" },
         "isReported": { "type": "boolean" }
@@ -29,12 +30,80 @@
         "alias": { "type": "string" },
         "avatar": { "type": "string" },
         "strand": { "type": "string" },
-        "bio": { "type": "string" },
-        "starsCount": { "type": "integer" },
-        "totalChatsSent": { "type": "integer" },
-        "role": { "type": "string", "enum": ["student", "admin"] }
+        "statusBio": { "type": "string" },
+        "tambayStars": { "type": "integer" },
+        "vipLevel": { "type": "string" },
+        "isOnline": { "type": "boolean" },
+        "lastSeen": { "type": "integer" },
+        "role": { "type": "string", "enum": ["MEMBER", "ADMIN"] }
       },
       "required": ["userId", "alias"]
+    },
+    "FriendRequest": {
+      "title": "FriendRequest",
+      "description": "Barkada friend request between two verified students",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "senderUid": { "type": "string" },
+        "senderAlias": { "type": "string" },
+        "senderAvatar": { "type": "string" },
+        "senderStrand": { "type": "string" },
+        "recipientUid": { "type": "string" },
+        "recipientAlias": { "type": "string" },
+        "status": { "type": "string", "enum": ["PENDING", "ACCEPTED", "REJECTED"] },
+        "createdAt": { "type": "integer" }
+      },
+      "required": ["senderUid", "recipientUid", "status"]
+    },
+    "PrivateConversation": {
+      "title": "PrivateConversation",
+      "description": "Participant-restricted private 1-on-1 conversation metadata",
+      "type": "object",
+      "properties": {
+        "conversationId": { "type": "string" },
+        "participantUids": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "createdAt": { "type": "integer" },
+        "updatedAt": { "type": "integer" },
+        "lastMessage": { "type": "string" },
+        "lastSenderUid": { "type": "string" }
+      },
+      "required": ["participantUids"]
+    },
+    "PrivateChatMessage": {
+      "title": "PrivateChatMessage",
+      "description": "One-on-one message between two authorized participants",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "conversationId": { "type": "string" },
+        "senderUid": { "type": "string" },
+        "senderName": { "type": "string" },
+        "senderAvatar": { "type": "string" },
+        "messageText": { "type": "string" },
+        "timestamp": { "type": "string" },
+        "timestampMillis": { "type": "integer" },
+        "messageType": { "type": "string" }
+      },
+      "required": ["senderUid", "messageText"]
+    },
+    "CallSession": {
+      "title": "CallSession",
+      "description": "One-to-one video/audio call signaling state",
+      "type": "object",
+      "properties": {
+        "callId": { "type": "string" },
+        "callerUid": { "type": "string" },
+        "callerName": { "type": "string" },
+        "calleeUid": { "type": "string" },
+        "status": { "type": "string", "enum": ["CALLING", "CONNECTED", "ENDED", "REJECTED"] },
+        "type": { "type": "string", "enum": ["VIDEO", "AUDIO"] },
+        "createdAt": { "type": "integer" }
+      },
+      "required": ["callerUid", "calleeUid", "status"]
     },
     "ReportedMessage": {
       "title": "ReportedMessage",
@@ -47,11 +116,11 @@
         "senderName": { "type": "string" },
         "messageText": { "type": "string" },
         "reason": { "type": "string" },
-        "reportedBy": { "type": "string" },
+        "reporterUid": { "type": "string" },
         "reportedAt": { "type": "string" },
         "status": { "type": "string" }
       },
-      "required": ["messageId", "roomId", "reason", "reportedBy"]
+      "required": ["messageId", "reason", "reporterUid"]
     },
     "CampusAnnouncement": {
       "title": "CampusAnnouncement",
@@ -72,6 +141,22 @@
     "/users/{userId}": {
       "schema": { "$ref": "#/entities/StudentUser" },
       "description": "Student user profile and preferences"
+    },
+    "/friend_requests/{requestId}": {
+      "schema": { "$ref": "#/entities/FriendRequest" },
+      "description": "Barkada friend requests between students"
+    },
+    "/private_chats/{conversationId}": {
+      "schema": { "$ref": "#/entities/PrivateConversation" },
+      "description": "Private 1-on-1 conversation metadata"
+    },
+    "/private_chats/{conversationId}/messages/{messageId}": {
+      "schema": { "$ref": "#/entities/PrivateChatMessage" },
+      "description": "Participant-restricted private chat messages"
+    },
+    "/calls/{callId}": {
+      "schema": { "$ref": "#/entities/CallSession" },
+      "description": "1-on-1 private video and audio call signaling"
     },
     "/reports/{reportId}": {
       "schema": { "$ref": "#/entities/ReportedMessage" },

@@ -12,7 +12,15 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
+import android.util.Log
+import androidx.credentials.CredentialManager
+import androidx.credentials.GetCredentialRequest
+import androidx.credentials.CustomCredential
+import com.google.android.libraries.identity.googleid.GetSignInWithGoogleOption
+import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential
+import kotlinx.coroutines.launch
 import com.example.ui.components.AdBannerView
 import com.example.ui.components.EmptyStateView
 import com.example.ui.components.KidAdDialog
@@ -106,10 +114,40 @@ class MainActivity : ComponentActivity() {
                                         )
                                     }
                                     ScreenState.AUTH -> {
+                                        val coroutineScope = rememberCoroutineScope()
                                         AuthScreen(
-                                            onSignInSuccess = { email, alias ->
-                                                viewModel.demoSignIn(email, alias)
+                                            onSignInWithEmail = { email, pass, onResult ->
+                                                viewModel.signInWithEmail(email, pass, onResult)
                                             },
+                                            onSignUpWithEmail = { email, pass, alias, strand, onResult ->
+                                                viewModel.signUpWithEmail(email, pass, alias, strand, onResult)
+                                            },
+                                            onGoogleSignInClick = {
+                                                val credentialManager = CredentialManager.create(this@MainActivity)
+                                                val clientId = try {
+                                                    getString(R.string.default_web_client_id)
+                                                } catch (e: Exception) {
+                                                    ""
+                                                }
+                                                if (clientId.isNotBlank()) {
+                                                    val signInOption = GetSignInWithGoogleOption.Builder(serverClientId = clientId).build()
+                                                    val request = GetCredentialRequest.Builder().addCredentialOption(signInOption).build()
+                                                    coroutineScope.launch {
+                                                        try {
+                                                            val result = credentialManager.getCredential(this@MainActivity, request)
+                                                            val credential = result.credential
+                                                            if (credential is CustomCredential && credential.type == GoogleIdTokenCredential.TYPE_GOOGLE_ID_TOKEN_CREDENTIAL) {
+                                                                val googleIdToken = GoogleIdTokenCredential.createFrom(credential.data).idToken
+                                                                viewModel.signInWithGoogle(googleIdToken) { _, _ -> }
+                                                            }
+                                                        } catch (e: Exception) {
+                                                            Log.e("Auth", "Google sign-in exception: ${e.message}", e)
+                                                        }
+                                                    }
+                                                }
+                                            },
+                                            isAuthLoading = uiState.isAuthLoading,
+                                            authErrorMessage = uiState.authErrorMessage,
                                             onNavigateToCreateUsername = {
                                                 viewModel.navigateTo(ScreenState.CREATE_USERNAME)
                                             },
@@ -224,10 +262,18 @@ class MainActivity : ComponentActivity() {
                                             privateMessages = uiState.privateMessagesMap[uiState.activePrivateFriend?.id] ?: emptyList(),
                                             studentProfile = uiState.studentProfile,
                                             isPrivateVideoCallOpen = uiState.isPrivateVideoCallOpen,
+                                            incomingRequests = uiState.incomingFriendRequests,
+                                            searchedStudents = uiState.searchedStudents,
+                                            isSearchingStudents = uiState.isSearchingStudents,
+                                            activeCallSession = uiState.activeCallSession,
                                             onSelectFriend = { viewModel.openPrivateChat(it) },
                                             onBackFromChat = { viewModel.closePrivateChat() },
                                             onBackToDashboard = { viewModel.navigateTo(ScreenState.MAIN_MENU) },
                                             onAddFriend = { alias, avatar, strand, bio -> viewModel.addFriend(alias, avatar, strand, bio) },
+                                            onSendFriendRequest = { targetUid, targetAlias -> viewModel.sendFriendRequest(targetUid, targetAlias) },
+                                            onAcceptFriendRequest = { viewModel.acceptFriendRequest(it) },
+                                            onRejectFriendRequest = { viewModel.rejectFriendRequest(it) },
+                                            onSearchStudents = { viewModel.searchStudents(it) },
                                             onRemoveFriend = { viewModel.removeFriend(it) },
                                             onSendPrivateMessage = { friendId, text -> viewModel.sendPrivateMessage(friendId, text) },
                                             onTogglePrivateVideoCall = { viewModel.togglePrivateVideoCall(it) }

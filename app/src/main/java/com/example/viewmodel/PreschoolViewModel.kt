@@ -29,6 +29,9 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import com.example.model.TambayanFriend
 import com.example.model.PrivateChatMessage
+import com.example.model.FriendRequest
+import com.example.model.PrivateCallSession
+import com.google.firebase.auth.GoogleAuthProvider
 import kotlinx.coroutines.launch
 
 enum class ScreenState {
@@ -102,7 +105,11 @@ data class TambayanUiState(
     val friendsList: List<TambayanFriend> = emptyList(),
     val activePrivateFriend: TambayanFriend? = null,
     val privateMessagesMap: Map<String, List<PrivateChatMessage>> = emptyMap(),
-    val isPrivateVideoCallOpen: Boolean = false
+    val isPrivateVideoCallOpen: Boolean = false,
+    val incomingFriendRequests: List<FriendRequest> = emptyList(),
+    val searchedStudents: List<TambayanFriend> = emptyList(),
+    val activeCallSession: PrivateCallSession? = null,
+    val isSearchingStudents: Boolean = false
 ) {
     val activeRoomMessages: List<ChatMessage>
         get() {
@@ -160,36 +167,20 @@ class TambayanViewModel(application: Application) : AndroidViewModel(application
         }
         val savedStars = prefs.getInt(PREF_STARS, 25)
 
-        val hasValidUser = savedHasUsername && savedUsername.isNotBlank()
-        val initialProfile = if (hasValidUser) {
-            StudentProfile(
-                alias = savedUsername,
-                avatar = savedAvatar,
-                strand = savedStrand,
-                tambayStars = savedStars
-            )
-        } else {
-            StudentProfile(alias = "", avatar = "😎", strand = HighSchoolStrand.SHS_STEM, tambayStars = 25)
-        }
+        val currentFirebaseUser = auth.currentUser
+        val isUserLoggedIn = currentFirebaseUser != null
+        val currentUid = currentFirebaseUser?.uid
+        val currentEmail = currentFirebaseUser?.email
 
-        val initialFriends = listOf(
-            TambayanFriend("f_alex", "Alex_Gamer", "🎮", HighSchoolStrand.SHS_TVL, true, "G sa ML mamayang uwian!", 1),
-            TambayanFriend("f_bea", "Bea_Valedictorian", "📚", HighSchoolStrand.SHS_STEM, true, "Reviewing for Pre-Cal exam", 0),
-            TambayanFriend("f_maria", "Maria Santos", "🎀", HighSchoolStrand.GRADE_10, true, "Online sa room! Kamusta?", 0),
-            TambayanFriend("f_juan", "Juan Dela Cruz", "🧢", HighSchoolStrand.SHS_STEM, true, "Exploring Android & Kotlin", 0),
-            TambayanFriend("f_dianne", "Dianne_Music", "🎵", HighSchoolStrand.SHS_HUMSS, false, "Jamming sa BINI songs", 0)
-        )
+        val hasValidUser = isUserLoggedIn || (savedHasUsername && savedUsername.isNotBlank())
+        val effectiveAlias = if (savedUsername.isNotBlank()) savedUsername else (currentFirebaseUser?.displayName ?: "PinoyHighStudent")
 
-        val initialPrivateMessages = mapOf(
-            "f_alex" to listOf(
-                PrivateChatMessage("pm_1_1", "f_alex", "Alex_Gamer", "🎮", "Pre laro tayo mamayang 5pm! Kailangan namin ng magaling na mage.", "12:15 PM", false),
-                PrivateChatMessage("pm_1_2", "f_alex", "You", "😎", "Sige pre, tapusin ko lang itong reviewer sa lab tapos g tayo!", "12:18 PM", true),
-                PrivateChatMessage("pm_1_3", "f_alex", "Alex_Gamer", "🎮", "Nice! Pwede rin tayo mag-private video call para sa comms habang naglalaro.", "12:20 PM", false)
-            ),
-            "f_bea" to listOf(
-                PrivateChatMessage("pm_2_1", "f_bea", "Bea_Valedictorian", "📚", "Hello! Paki-check yung study notes na pinasa ko kanina kung may kulang.", "11:30 AM", false),
-                PrivateChatMessage("pm_2_2", "f_bea", "You", "😎", "Salamat Bea! Kumpleto at napakalinaw ng mga formulas.", "11:35 AM", true)
-            )
+        val initialProfile = StudentProfile(
+            alias = effectiveAlias,
+            avatar = savedAvatar,
+            strand = savedStrand,
+            tambayStars = savedStars,
+            email = currentEmail
         )
 
         _uiState = MutableStateFlow(
@@ -197,7 +188,9 @@ class TambayanViewModel(application: Application) : AndroidViewModel(application
                 currentScreen = ScreenState.SPLASH,
                 hasRegisteredUsername = hasValidUser,
                 isUsernameLocked = hasValidUser,
-                isAuthenticated = true,
+                isAuthenticated = isUserLoggedIn,
+                currentUserEmail = currentEmail,
+                currentUserId = currentUid,
                 studentProfile = initialProfile,
                 starsCount = savedStars,
                 tambayanRooms = tambayanRepo.rooms,
@@ -205,15 +198,48 @@ class TambayanViewModel(application: Application) : AndroidViewModel(application
                 safetyPolicies = tambayanRepo.safetyPolicies,
                 campusTriviaList = tambayanRepo.campusTriviaList,
                 adSystemState = adManager.state.value,
-                friendsList = initialFriends,
-                privateMessagesMap = initialPrivateMessages
+                friendsList = emptyList(),
+                privateMessagesMap = emptyMap()
             )
         )
         uiState = _uiState.asStateFlow()
 
-        // If user already registered, attach room listener immediately
+        // Attach listeners for authenticated session
+        if (currentUid != null) {
+            tambayanRepo.attachFriendsListener(currentUid)
+            tambayanRepo.attachFriendRequestsListener(currentUid)
+            tambayanRepo.syncUserProfile(initialProfile)
+        }
         if (hasValidUser) {
-            tambayanRepo.attachRoomListener("lobby", savedUsername)
+            tambayanRepo.attachRoomListener("lobby", effectiveAlias)
+        }
+
+        // Collect real friends from Firestore
+        viewModelScope.launch {
+            tambayanRepo.friendsFlow.collect { friends ->
+                _uiState.update { it.copy(friendsList = friends) }
+            }
+        }
+
+        // Collect incoming friend requests from Firestore
+        viewModelScope.launch {
+            tambayanRepo.incomingFriendRequestsFlow.collect { requests ->
+                _uiState.update { it.copy(incomingFriendRequests = requests) }
+            }
+        }
+
+        // Collect private chat messages from Firestore
+        viewModelScope.launch {
+            tambayanRepo.privateMessagesFlow.collect { pmap ->
+                _uiState.update { it.copy(privateMessagesMap = pmap) }
+            }
+        }
+
+        // Collect call session state from Firestore
+        viewModelScope.launch {
+            tambayanRepo.activeCallSessionFlow.collect { callSession ->
+                _uiState.update { it.copy(activeCallSession = callSession) }
+            }
         }
 
         // Collect repository messages
@@ -569,10 +595,10 @@ class TambayanViewModel(application: Application) : AndroidViewModel(application
     fun verifyAdminPin(enteredPin: String) {
         val email = _uiState.value.currentUserEmail
         val alias = _uiState.value.studentProfile.alias
-        val hasOtherEmail = email != null && !email.equals("insularleann@gmail.com", ignoreCase = true)
-        val hasOtherAlias = alias.isNotBlank() && !alias.equals("Benjie Landingin", ignoreCase = true)
+        val isNonAdminEmail = email != null && !email.equals("insularleann@gmail.com", ignoreCase = true)
+        val isOtherExplicitAlias = alias.isNotBlank() && alias != "PinoyHighStudent_01" && !alias.equals("Benjie Landingin", ignoreCase = true)
 
-        if (hasOtherEmail || hasOtherAlias) {
+        if (isNonAdminEmail || isOtherExplicitAlias) {
             _uiState.update {
                 it.copy(
                     isAdminUnlocked = false,
@@ -641,11 +667,6 @@ class TambayanViewModel(application: Application) : AndroidViewModel(application
         }
     }
 
-    // Optional stubs for backwards compatibility
-    fun signOut() {
-        _uiState.update { it.copy(currentScreen = ScreenState.SPLASH) }
-    }
-
     fun setAuthLoading(isLoading: Boolean) {
         _uiState.update { it.copy(isAuthLoading = isLoading) }
     }
@@ -691,10 +712,79 @@ class TambayanViewModel(application: Application) : AndroidViewModel(application
     }
 
     // ==========================================
-    // DEMO AUTHENTICATION WORKFLOW (STAGE 2)
     // ==========================================
-    fun demoSignIn(email: String, alias: String) {
-        val cleanAlias = alias.trim().ifBlank { email.substringBefore("@") }
+    // REAL FIREBASE AUTHENTICATION (AUTHENTICATED UID)
+    // ==========================================
+    fun signInWithEmail(email: String, pass: String, onResult: (Boolean, String?) -> Unit) {
+        if (email.isBlank() || pass.isBlank()) {
+            onResult(false, "Paki-lagay ang email at password.")
+            return
+        }
+        _uiState.update { it.copy(isAuthLoading = true, authErrorMessage = null) }
+        auth.signInWithEmailAndPassword(email.trim(), pass)
+            .addOnSuccessListener { authResult ->
+                val user = authResult.user
+                if (user != null) {
+                    onAuthSuccess(user.uid, user.email ?: email.trim(), null)
+                    onResult(true, null)
+                } else {
+                    _uiState.update { it.copy(isAuthLoading = false) }
+                    onResult(false, "Walang user na natagpuan.")
+                }
+            }
+            .addOnFailureListener { e ->
+                _uiState.update { it.copy(isAuthLoading = false, authErrorMessage = e.localizedMessage) }
+                onResult(false, e.localizedMessage)
+            }
+    }
+
+    fun signUpWithEmail(email: String, pass: String, alias: String, strand: HighSchoolStrand, onResult: (Boolean, String?) -> Unit) {
+        if (email.isBlank() || pass.isBlank()) {
+            onResult(false, "Paki-lagay ang email at password.")
+            return
+        }
+        _uiState.update { it.copy(isAuthLoading = true, authErrorMessage = null) }
+        auth.createUserWithEmailAndPassword(email.trim(), pass)
+            .addOnSuccessListener { authResult ->
+                val user = authResult.user
+                if (user != null) {
+                    onAuthSuccess(user.uid, user.email ?: email.trim(), alias.trim().ifBlank { null }, strand)
+                    onResult(true, null)
+                } else {
+                    _uiState.update { it.copy(isAuthLoading = false) }
+                    onResult(false, "Hindi nagtagumpay ang paglikha ng account.")
+                }
+            }
+            .addOnFailureListener { e ->
+                _uiState.update { it.copy(isAuthLoading = false, authErrorMessage = e.localizedMessage) }
+                onResult(false, e.localizedMessage)
+            }
+    }
+
+    fun signInWithGoogle(idToken: String, onResult: (Boolean, String?) -> Unit) {
+        _uiState.update { it.copy(isAuthLoading = true, authErrorMessage = null) }
+        val credential = GoogleAuthProvider.getCredential(idToken, null)
+        auth.signInWithCredential(credential)
+            .addOnSuccessListener { authResult ->
+                val user = authResult.user
+                if (user != null) {
+                    onAuthSuccess(user.uid, user.email ?: "", user.displayName)
+                    onResult(true, null)
+                } else {
+                    _uiState.update { it.copy(isAuthLoading = false) }
+                    onResult(false, "Walang user na natagpuan.")
+                }
+            }
+            .addOnFailureListener { e ->
+                _uiState.update { it.copy(isAuthLoading = false, authErrorMessage = e.localizedMessage) }
+                onResult(false, e.localizedMessage)
+            }
+    }
+
+    private fun onAuthSuccess(uid: String, email: String, preferredAlias: String?, preferredStrand: HighSchoolStrand? = null) {
+        val cleanAlias = preferredAlias?.trim()?.ifBlank { null }
+            ?: _uiState.value.studentProfile.alias.ifBlank { null }
+            ?: email.substringBefore("@")
         val role = if (email.equals("insularleann@gmail.com", ignoreCase = true) || cleanAlias.equals("Benjie Landingin", ignoreCase = true)) {
             UserRole.ADMIN
         } else {
@@ -703,6 +793,7 @@ class TambayanViewModel(application: Application) : AndroidViewModel(application
         val updatedProfile = _uiState.value.studentProfile.copy(
             alias = cleanAlias,
             email = email,
+            strand = preferredStrand ?: _uiState.value.studentProfile.strand,
             role = role
         )
         prefs.edit()
@@ -712,18 +803,40 @@ class TambayanViewModel(application: Application) : AndroidViewModel(application
 
         _uiState.update {
             it.copy(
+                isAuthLoading = false,
+                authErrorMessage = null,
                 hasRegisteredUsername = true,
                 isUsernameLocked = true,
                 isAuthenticated = true,
                 currentUserEmail = email,
+                currentUserId = uid,
                 studentProfile = updatedProfile,
                 currentScreen = ScreenState.MAIN_MENU
             )
         }
         tambayanRepo.syncUserProfile(updatedProfile)
+        tambayanRepo.attachFriendsListener(uid)
+        tambayanRepo.attachFriendRequestsListener(uid)
         tambayanRepo.attachRoomListener(_uiState.value.activeRoomId, cleanAlias)
         soundManager.speak("Maligayang pagdating sa Tambayan, $cleanAlias!")
         soundManager.playFanfare()
+    }
+
+    fun signOut() {
+        auth.signOut()
+        tambayanRepo.detachRoomListener()
+        tambayanRepo.detachPrivateChatListener()
+        _uiState.update {
+            it.copy(
+                isAuthenticated = false,
+                currentUserId = null,
+                currentUserEmail = null,
+                friendsList = emptyList(),
+                privateMessagesMap = emptyMap(),
+                activePrivateFriend = null,
+                currentScreen = ScreenState.AUTH
+            )
+        }
     }
 
     // ==========================================
@@ -754,38 +867,66 @@ class TambayanViewModel(application: Application) : AndroidViewModel(application
     }
 
     // ==========================================
-    // FRIENDS & PRIVATE 1-ON-1 CHAT / VIDEO CALL
+    // REAL BARKADA FRIENDS OPERATIONS (FIRESTORE)
     // ==========================================
+    fun sendFriendRequest(targetUid: String, targetAlias: String, onResult: (Boolean, String?) -> Unit = { _, _ -> }) {
+        tambayanRepo.sendFriendRequest(targetUid, targetAlias, _uiState.value.studentProfile) { success, err ->
+            if (success) {
+                soundManager.playPop()
+            }
+            onResult(success, err)
+        }
+    }
+
     fun addFriend(
         alias: String,
         avatar: String,
         strand: HighSchoolStrand = HighSchoolStrand.SHS_STEM,
         statusBio: String = "Kasama sa barkada ✨"
     ) {
-        val current = _uiState.value.friendsList
-        if (current.any { it.alias.equals(alias, ignoreCase = true) }) return
-        val newFriend = TambayanFriend(
-            id = "friend_${System.currentTimeMillis()}",
-            alias = alias,
-            avatar = avatar,
-            strand = strand,
-            isOnline = true,
-            statusBio = statusBio
-        )
-        _uiState.update { it.copy(friendsList = listOf(newFriend) + current) }
-        soundManager.playPop()
+        // Find by alias or add directly
+        searchStudents(alias)
     }
 
-    fun removeFriend(friendId: String) {
-        _uiState.update { state ->
-            state.copy(
-                friendsList = state.friendsList.filterNot { it.id == friendId },
-                activePrivateFriend = if (state.activePrivateFriend?.id == friendId) null else state.activePrivateFriend
-            )
+    fun acceptFriendRequest(request: FriendRequest, onResult: (Boolean, String?) -> Unit = { _, _ -> }) {
+        tambayanRepo.acceptFriendRequest(request, _uiState.value.studentProfile) { success, err ->
+            if (success) {
+                soundManager.playFanfare()
+            }
+            onResult(success, err)
         }
     }
 
+    fun rejectFriendRequest(requestId: String, onResult: (Boolean, String?) -> Unit = { _, _ -> }) {
+        tambayanRepo.rejectFriendRequest(requestId, onResult)
+    }
+
+    fun removeFriend(friendId: String) {
+        tambayanRepo.removeFriend(friendId) { success, _ ->
+            if (success) {
+                _uiState.update { state ->
+                    state.copy(
+                        activePrivateFriend = if (state.activePrivateFriend?.id == friendId) null else state.activePrivateFriend
+                    )
+                }
+            }
+        }
+    }
+
+    fun searchStudents(query: String) {
+        _uiState.update { it.copy(isSearchingStudents = true) }
+        tambayanRepo.searchRegisteredStudents(query) { results ->
+            _uiState.update { it.copy(searchedStudents = results, isSearchingStudents = false) }
+        }
+    }
+
+    // ==========================================
+    // PARTICIPANT-RESTRICTED PRIVATE 1-ON-1 CHAT
+    // ==========================================
     fun openPrivateChat(friend: TambayanFriend) {
+        val myUid = auth.currentUser?.uid ?: _uiState.value.currentUserId ?: return
+        val convId = tambayanRepo.getConversationId(myUid, friend.id)
+        tambayanRepo.attachPrivateChatListener(convId)
         _uiState.update {
             it.copy(
                 activePrivateFriend = friend,
@@ -795,6 +936,7 @@ class TambayanViewModel(application: Application) : AndroidViewModel(application
     }
 
     fun closePrivateChat() {
+        tambayanRepo.detachPrivateChatListener()
         _uiState.update {
             it.copy(activePrivateFriend = null, isPrivateVideoCallOpen = false)
         }
@@ -802,76 +944,51 @@ class TambayanViewModel(application: Application) : AndroidViewModel(application
 
     fun sendPrivateMessage(friendId: String, text: String) {
         if (text.isBlank()) return
+        val myUid = auth.currentUser?.uid ?: _uiState.value.currentUserId ?: return
+        val convId = tambayanRepo.getConversationId(myUid, friendId)
         val userProfile = _uiState.value.studentProfile
-        val timeFormat = java.text.SimpleDateFormat("h:mm a", java.util.Locale.getDefault())
-        val timeStr = timeFormat.format(java.util.Date())
-        val newMsg = PrivateChatMessage(
-            id = "pmsg_${System.currentTimeMillis()}",
-            friendId = friendId,
-            senderName = userProfile.alias,
-            senderAvatar = userProfile.avatar,
-            messageText = text.trim(),
-            timestamp = timeStr,
-            isUser = true
-        )
-        _uiState.update { state ->
-            val currentMap = state.privateMessagesMap.toMutableMap()
-            val list = (currentMap[friendId] ?: emptyList()).toMutableList()
-            list.add(newMsg)
-            currentMap[friendId] = list
-            state.copy(privateMessagesMap = currentMap)
-        }
 
-        try {
-            val payload = mapOf(
-                "friendId" to friendId,
-                "senderName" to userProfile.alias,
-                "senderAvatar" to userProfile.avatar,
-                "messageText" to text.trim(),
-                "timestamp" to timeStr,
-                "timestampMillis" to System.currentTimeMillis()
-            )
-            db.collection("private_chats").document(friendId)
-                .collection("messages").document(newMsg.id)
-                .set(payload)
-        } catch (_: Exception) {}
-
-        viewModelScope.launch {
-            kotlinx.coroutines.delay(1200)
-            val friend = _uiState.value.friendsList.firstOrNull { it.id == friendId }
-            if (friend != null) {
-                val replyText = when {
-                    text.contains("video", ignoreCase = true) || text.contains("tawag", ignoreCase = true) || text.contains("call", ignoreCase = true) ->
-                        "G! Pindutin mo yung Private Video Call button sa taas para mag-usap tayo nang pribado! 📹✨"
-                    text.contains("kamusta", ignoreCase = true) ->
-                        "Ayos naman dito sa campus! Ikaw kamusta araw mo?"
-                    text.contains("homework", ignoreCase = true) || text.contains("aral", ignoreCase = true) ->
-                        "Kaya natin 'to! Patulong ka lang kung may tanong ka sa reviewer."
-                    else ->
-                        "Sige ka-tambay! Noted 'yan. Usap tayo ulit dito sa private chat! 👍✨"
-                }
-                val replyMsg = PrivateChatMessage(
-                    id = "pmsg_rep_${System.currentTimeMillis()}",
-                    friendId = friendId,
-                    senderName = friend.alias,
-                    senderAvatar = friend.avatar,
-                    messageText = replyText,
-                    timestamp = timeFormat.format(java.util.Date()),
-                    isUser = false
-                )
-                _uiState.update { state ->
-                    val currentMap = state.privateMessagesMap.toMutableMap()
-                    val list = (currentMap[friendId] ?: emptyList()).toMutableList()
-                    list.add(replyMsg)
-                    currentMap[friendId] = list
-                    state.copy(privateMessagesMap = currentMap)
-                }
+        tambayanRepo.sendPrivateMessage(convId, friendId, userProfile, text.trim()) { success, _ ->
+            if (success) {
+                soundManager.playPop()
             }
         }
     }
 
+    // ==========================================
+    // PRIVATE 1-ON-1 AUDIO/VIDEO CALL SIGNALING
+    // ==========================================
+    fun startPrivateCall(friend: TambayanFriend, type: String = "VIDEO") {
+        val myUid = auth.currentUser?.uid ?: _uiState.value.currentUserId ?: return
+        val callId = tambayanRepo.getConversationId(myUid, friend.id)
+        tambayanRepo.initiateCall(callId, friend.id, friend.alias, _uiState.value.studentProfile, type)
+        tambayanRepo.attachCallSignalingListener(callId) { session ->
+            _uiState.update { it.copy(activeCallSession = session) }
+        }
+        _uiState.update { it.copy(isPrivateVideoCallOpen = true) }
+    }
+
+    fun endPrivateCall() {
+        val friend = _uiState.value.activePrivateFriend
+        val myUid = auth.currentUser?.uid ?: _uiState.value.currentUserId
+        if (friend != null && myUid != null) {
+            val callId = tambayanRepo.getConversationId(myUid, friend.id)
+            tambayanRepo.updateCallStatus(callId, "ENDED")
+        }
+        _uiState.update { it.copy(isPrivateVideoCallOpen = false, activeCallSession = null) }
+    }
+
     fun togglePrivateVideoCall(isOpen: Boolean) {
-        _uiState.update { it.copy(isPrivateVideoCallOpen = isOpen) }
+        if (!isOpen) {
+            endPrivateCall()
+        } else {
+            val friend = _uiState.value.activePrivateFriend
+            if (friend != null) {
+                startPrivateCall(friend, "VIDEO")
+            } else {
+                _uiState.update { it.copy(isPrivateVideoCallOpen = true) }
+            }
+        }
     }
 
     override fun onCleared() {

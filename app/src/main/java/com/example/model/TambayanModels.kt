@@ -137,22 +137,62 @@ data class PinoyCampusTrivia(
 // ==========================================
 
 data class TambayanFriend(
-    val id: String,
-    val alias: String,
-    val avatar: String,
+    val id: String = "",
+    val alias: String = "",
+    val avatar: String = "😎",
     val strand: HighSchoolStrand = HighSchoolStrand.SHS_STEM,
-    val isOnline: Boolean = true,
+    val isOnline: Boolean = false,
     val statusBio: String = "Kasama sa barkada ✨",
-    val unreadCount: Int = 0
+    val unreadCount: Int = 0,
+    val addedAt: Long = System.currentTimeMillis()
+)
+
+data class FriendRequest(
+    val id: String = "",
+    val senderUid: String = "",
+    val senderAlias: String = "",
+    val senderAvatar: String = "😎",
+    val senderStrand: String = "SHS_STEM",
+    val recipientUid: String = "",
+    val recipientAlias: String = "",
+    val status: String = "PENDING", // PENDING, ACCEPTED, REJECTED
+    val createdAt: Long = System.currentTimeMillis()
+)
+
+data class PrivateConversation(
+    val conversationId: String = "",
+    val participantUids: List<String> = emptyList(),
+    val createdAt: Long = System.currentTimeMillis(),
+    val updatedAt: Long = System.currentTimeMillis(),
+    val lastMessage: String = "",
+    val lastSenderUid: String = ""
 )
 
 data class PrivateChatMessage(
-    val id: String,
-    val friendId: String,
-    val senderName: String,
-    val senderAvatar: String,
-    val messageText: String,
-    val timestamp: String,
+    val id: String = "",
+    val friendId: String = "",
+    val conversationId: String = "",
+    val senderUid: String = "",
+    val senderName: String = "",
+    val senderAvatar: String = "😎",
+    val messageText: String = "",
+    val timestamp: String = "",
+    val timestampMillis: Long = System.currentTimeMillis(),
+    val messageType: String = "TEXT", // TEXT, REACTION, SYSTEM
     val isUser: Boolean = false,
     val isLiked: Boolean = false
+)
+
+data class PrivateCallSession(
+    val callId: String = "",
+    val callerUid: String = "",
+    val callerName: String = "",
+    val callerAvatar: String = "😎",
+    val calleeUid: String = "",
+    val calleeName: String = "",
+    val status: String = "IDLE", // IDLE, CALLING, CONNECTED, ENDED, REJECTED
+    val type: String = "VIDEO", // VIDEO, AUDIO
+    val isCameraEnabled: Boolean = true,
+    val isMicMuted: Boolean = false,
+    val createdAt: Long = System.currentTimeMillis()
 )

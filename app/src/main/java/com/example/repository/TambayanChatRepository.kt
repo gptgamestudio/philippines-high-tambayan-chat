@@ -14,6 +14,10 @@ import com.example.model.ReportReason
 import com.example.model.ReportedMessage
 import com.example.model.StudentProfile
 import com.example.model.TambayanRoom
+import com.example.model.FriendRequest
+import com.example.model.PrivateCallSession
+import com.example.model.PrivateChatMessage
+import com.example.model.TambayanFriend
 import com.google.firebase.Firebase
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.auth
@@ -269,6 +273,25 @@ class TambayanChatRepository(
     private var activeRoomListener: ListenerRegistration? = null
     private var listeningRoomId: String? = null
 
+    // Real Firestore Friends & Private 1-on-1 Chat Flows
+    private val _friendsFlow = MutableStateFlow<List<TambayanFriend>>(emptyList())
+    val friendsFlow: StateFlow<List<TambayanFriend>> = _friendsFlow.asStateFlow()
+
+    private val _incomingFriendRequestsFlow = MutableStateFlow<List<FriendRequest>>(emptyList())
+    val incomingFriendRequestsFlow: StateFlow<List<FriendRequest>> = _incomingFriendRequestsFlow.asStateFlow()
+
+    private val _privateMessagesFlow = MutableStateFlow<Map<String, List<PrivateChatMessage>>>(emptyMap())
+    val privateMessagesFlow: StateFlow<Map<String, List<PrivateChatMessage>>> = _privateMessagesFlow.asStateFlow()
+
+    private val _activeCallSessionFlow = MutableStateFlow<PrivateCallSession?>(null)
+    val activeCallSessionFlow: StateFlow<PrivateCallSession?> = _activeCallSessionFlow.asStateFlow()
+
+    private var friendsListenerRegistration: ListenerRegistration? = null
+    private var friendRequestsListenerRegistration: ListenerRegistration? = null
+    private var privateChatListenerRegistration: ListenerRegistration? = null
+    private var callSignalingListenerRegistration: ListenerRegistration? = null
+    private var activeConversationId: String? = null
+
     // Campus Safety & Legal Policies (DepEd, Anti-Bullying, Data Privacy, UGC)
     val safetyPolicies = listOf(
         CampusSafetyPolicyItem(
@@ -441,7 +464,7 @@ class TambayanChatRepository(
         val timeStr = timeFormat.format(Date())
         val timestampMillis = System.currentTimeMillis()
         val msgId = "msg_${timestampMillis}_${(1000..9999).random()}"
-        val currentUserId = senderProfile.alias
+        val currentUserId = auth.currentUser?.uid ?: senderProfile.alias
 
         val newMsg = ChatMessage(
             id = msgId,
@@ -668,19 +691,398 @@ class TambayanChatRepository(
     }
 
     fun syncUserProfile(profile: StudentProfile) {
+        val uid = auth.currentUser?.uid ?: return
         try {
-            val userDoc = db.collection("users").document(profile.alias)
+            val userDoc = db.collection("users").document(uid)
             val data = mapOf(
-                "alias" to profile.alias,
+                "userId" to uid,
+                "alias" to profile.alias.ifBlank { "PinoyHighStudent" },
                 "avatar" to profile.avatar,
                 "strand" to profile.strand.name,
-                "starsCount" to profile.tambayStars.toLong(),
-                "isPolicyAccepted" to profile.isPolicyAccepted
+                "statusBio" to "Kasama sa barkada ✨",
+                "tambayStars" to profile.tambayStars.toLong(),
+                "vipLevel" to profile.vipLevel,
+                "isPolicyAccepted" to profile.isPolicyAccepted,
+                "email" to (auth.currentUser?.email ?: profile.email),
+                "role" to profile.role.name,
+                "isOnline" to true,
+                "lastSeen" to System.currentTimeMillis()
             )
             userDoc.set(data, SetOptions.merge())
         } catch (e: Exception) {
             Log.w(TAG, "Error syncing user profile", e)
         }
+    }
+
+    // ==========================================
+    // BARKADA FRIENDS & REAL FIRESTORE BACKEND
+    // ==========================================
+    fun attachFriendsListener(currentUid: String) {
+        if (currentUid.isBlank()) return
+        friendsListenerRegistration?.remove()
+        friendsListenerRegistration = db.collection("users").document(currentUid)
+            .collection("friends")
+            .addSnapshotListener { snapshot, error ->
+                if (error != null) {
+                    Log.w(TAG, "Notice in friends listener: ${error.message}")
+                    return@addSnapshotListener
+                }
+                if (snapshot != null) {
+                    val list = snapshot.documents.mapNotNull { doc ->
+                        val friendUid = doc.id
+                        val alias = doc.getString("alias") ?: "Ka-Tambay"
+                        val avatar = doc.getString("avatar") ?: "😎"
+                        val strandName = doc.getString("strand") ?: HighSchoolStrand.SHS_STEM.name
+                        val strand = try { HighSchoolStrand.valueOf(strandName) } catch (_: Exception) { HighSchoolStrand.SHS_STEM }
+                        val isOnline = doc.getBoolean("isOnline") ?: false
+                        val statusBio = doc.getString("statusBio") ?: "Kasama sa barkada ✨"
+                        val addedAt = doc.getLong("addedAt") ?: System.currentTimeMillis()
+                        TambayanFriend(
+                            id = friendUid,
+                            alias = alias,
+                            avatar = avatar,
+                            strand = strand,
+                            isOnline = isOnline,
+                            statusBio = statusBio,
+                            addedAt = addedAt
+                        )
+                    }
+                    _friendsFlow.value = list
+                }
+            }
+    }
+
+    fun attachFriendRequestsListener(currentUid: String) {
+        if (currentUid.isBlank()) return
+        friendRequestsListenerRegistration?.remove()
+        friendRequestsListenerRegistration = db.collection("friend_requests")
+            .whereEqualTo("recipientUid", currentUid)
+            .whereEqualTo("status", "PENDING")
+            .addSnapshotListener { snapshot, error ->
+                if (error != null) {
+                    Log.w(TAG, "Notice in friend requests listener: ${error.message}")
+                    return@addSnapshotListener
+                }
+                if (snapshot != null) {
+                    val requests = snapshot.documents.mapNotNull { doc ->
+                        FriendRequest(
+                            id = doc.id,
+                            senderUid = doc.getString("senderUid") ?: "",
+                            senderAlias = doc.getString("senderAlias") ?: "",
+                            senderAvatar = doc.getString("senderAvatar") ?: "😎",
+                            senderStrand = doc.getString("senderStrand") ?: "SHS_STEM",
+                            recipientUid = doc.getString("recipientUid") ?: "",
+                            recipientAlias = doc.getString("recipientAlias") ?: "",
+                            status = doc.getString("status") ?: "PENDING",
+                            createdAt = doc.getLong("createdAt") ?: System.currentTimeMillis()
+                        )
+                    }
+                    _incomingFriendRequestsFlow.value = requests
+                }
+            }
+    }
+
+    fun sendFriendRequest(
+        targetUid: String,
+        targetAlias: String,
+        senderProfile: StudentProfile,
+        onResult: (Boolean, String?) -> Unit
+    ) {
+        val currentUid = auth.currentUser?.uid
+        if (currentUid == null) {
+            onResult(false, "Kailangan munang mag-sign in upang makapag-add ng kaibigan.")
+            return
+        }
+        if (currentUid == targetUid) {
+            onResult(false, "Hindi maaaring i-add ang sarili.")
+            return
+        }
+        val requestId = "req_${currentUid}_${targetUid}"
+        val requestData = mapOf(
+            "id" to requestId,
+            "senderUid" to currentUid,
+            "senderAlias" to senderProfile.alias,
+            "senderAvatar" to senderProfile.avatar,
+            "senderStrand" to senderProfile.strand.name,
+            "recipientUid" to targetUid,
+            "recipientAlias" to targetAlias,
+            "status" to "PENDING",
+            "createdAt" to System.currentTimeMillis()
+        )
+        db.collection("friend_requests").document(requestId)
+            .set(requestData)
+            .addOnSuccessListener { onResult(true, null) }
+            .addOnFailureListener { e -> onResult(false, e.localizedMessage) }
+    }
+
+    fun acceptFriendRequest(
+        request: FriendRequest,
+        currentProfile: StudentProfile,
+        onResult: (Boolean, String?) -> Unit
+    ) {
+        val currentUid = auth.currentUser?.uid ?: return onResult(false, "Not authenticated")
+        if (request.recipientUid != currentUid) return onResult(false, "Not authorized")
+
+        db.collection("friend_requests").document(request.id)
+            .update("status", "ACCEPTED")
+            .addOnSuccessListener {
+                val friendDataForMe = mapOf(
+                    "id" to request.senderUid,
+                    "alias" to request.senderAlias,
+                    "avatar" to request.senderAvatar,
+                    "strand" to request.senderStrand,
+                    "statusBio" to "Kasama sa barkada ✨",
+                    "addedAt" to System.currentTimeMillis(),
+                    "isOnline" to true
+                )
+                val friendDataForSender = mapOf(
+                    "id" to currentUid,
+                    "alias" to currentProfile.alias,
+                    "avatar" to currentProfile.avatar,
+                    "strand" to currentProfile.strand.name,
+                    "statusBio" to "Kasama sa barkada ✨",
+                    "addedAt" to System.currentTimeMillis(),
+                    "isOnline" to true
+                )
+
+                val batch = db.batch()
+                val myFriendRef = db.collection("users").document(currentUid).collection("friends").document(request.senderUid)
+                val senderFriendRef = db.collection("users").document(request.senderUid).collection("friends").document(currentUid)
+                batch.set(myFriendRef, friendDataForMe)
+                batch.set(senderFriendRef, friendDataForSender)
+
+                batch.commit()
+                    .addOnSuccessListener { onResult(true, null) }
+                    .addOnFailureListener { e -> onResult(false, e.localizedMessage) }
+            }
+            .addOnFailureListener { e -> onResult(false, e.localizedMessage) }
+    }
+
+    fun rejectFriendRequest(requestId: String, onResult: (Boolean, String?) -> Unit) {
+        db.collection("friend_requests").document(requestId)
+            .update("status", "REJECTED")
+            .addOnSuccessListener { onResult(true, null) }
+            .addOnFailureListener { e -> onResult(false, e.localizedMessage) }
+    }
+
+    fun removeFriend(friendUid: String, onResult: (Boolean, String?) -> Unit) {
+        val currentUid = auth.currentUser?.uid ?: return onResult(false, "Not authenticated")
+        db.collection("users").document(currentUid).collection("friends").document(friendUid)
+            .delete()
+            .addOnSuccessListener { onResult(true, null) }
+            .addOnFailureListener { e -> onResult(false, e.localizedMessage) }
+    }
+
+    fun searchRegisteredStudents(query: String, onResult: (List<TambayanFriend>) -> Unit) {
+        val currentUid = auth.currentUser?.uid ?: ""
+        db.collection("users")
+            .limit(20)
+            .get()
+            .addOnSuccessListener { snapshot ->
+                val results = snapshot.documents.mapNotNull { doc ->
+                    val uid = doc.id
+                    if (uid == currentUid) return@mapNotNull null
+                    val alias = doc.getString("alias") ?: return@mapNotNull null
+                    if (query.isNotBlank() && !alias.contains(query, ignoreCase = true)) return@mapNotNull null
+                    val avatar = doc.getString("avatar") ?: "😎"
+                    val strandName = doc.getString("strand") ?: HighSchoolStrand.SHS_STEM.name
+                    val strand = try { HighSchoolStrand.valueOf(strandName) } catch (_: Exception) { HighSchoolStrand.SHS_STEM }
+                    val isOnline = doc.getBoolean("isOnline") ?: false
+                    val statusBio = doc.getString("statusBio") ?: "Estudyante sa Tambayan"
+                    TambayanFriend(
+                        id = uid,
+                        alias = alias,
+                        avatar = avatar,
+                        strand = strand,
+                        isOnline = isOnline,
+                        statusBio = statusBio
+                    )
+                }
+                onResult(results)
+            }
+            .addOnFailureListener {
+                onResult(emptyList())
+            }
+    }
+
+    // ==========================================
+    // PARTICIPANT-RESTRICTED PRIVATE MESSAGING
+    // ==========================================
+    fun getConversationId(uid1: String, uid2: String): String {
+        return if (uid1 < uid2) "${uid1}_${uid2}" else "${uid2}_${uid1}"
+    }
+
+    fun attachPrivateChatListener(conversationId: String) {
+        if (conversationId.isBlank()) return
+        if (activeConversationId == conversationId && privateChatListenerRegistration != null) return
+        privateChatListenerRegistration?.remove()
+        activeConversationId = conversationId
+
+        privateChatListenerRegistration = db.collection("private_chats")
+            .document(conversationId)
+            .collection("messages")
+            .orderBy("timestampMillis", Query.Direction.ASCENDING)
+            .limit(100)
+            .addSnapshotListener { snapshot, error ->
+                if (error != null) {
+                    Log.w(TAG, "Notice in private chat listener: ${error.message}")
+                    return@addSnapshotListener
+                }
+                if (snapshot != null) {
+                    val currentUid = auth.currentUser?.uid ?: ""
+                    val messages = snapshot.documents.mapNotNull { doc ->
+                        val senderUid = doc.getString("senderUid") ?: ""
+                        PrivateChatMessage(
+                            id = doc.id,
+                            friendId = doc.getString("friendId") ?: "",
+                            conversationId = conversationId,
+                            senderUid = senderUid,
+                            senderName = doc.getString("senderName") ?: "Ka-Tambay",
+                            senderAvatar = doc.getString("senderAvatar") ?: "😎",
+                            messageText = doc.getString("messageText") ?: "",
+                            timestamp = doc.getString("timestamp") ?: "",
+                            timestampMillis = doc.getLong("timestampMillis") ?: System.currentTimeMillis(),
+                            messageType = doc.getString("messageType") ?: "TEXT",
+                            isUser = senderUid == currentUid,
+                            isLiked = doc.getBoolean("isLiked") ?: false
+                        )
+                    }
+                    val currentMap = _privateMessagesFlow.value.toMutableMap()
+                    currentMap[conversationId] = messages
+                    _privateMessagesFlow.value = currentMap
+                }
+            }
+    }
+
+    fun detachPrivateChatListener() {
+        privateChatListenerRegistration?.remove()
+        privateChatListenerRegistration = null
+        activeConversationId = null
+    }
+
+    fun sendPrivateMessage(
+        conversationId: String,
+        recipientUid: String,
+        senderProfile: StudentProfile,
+        text: String,
+        onResult: (Boolean, String?) -> Unit
+    ) {
+        val currentUid = auth.currentUser?.uid ?: return onResult(false, "Kailangan munang mag-sign in.")
+        if (text.isBlank()) return onResult(false, "Walang nilalamang mensahe.")
+
+        val timeFormat = SimpleDateFormat("h:mm a", Locale.getDefault())
+        val timeStr = timeFormat.format(Date())
+        val timestampMillis = System.currentTimeMillis()
+        val msgId = "pmsg_${timestampMillis}_${(1000..9999).random()}"
+
+        val convRef = db.collection("private_chats").document(conversationId)
+        val participants = listOf(currentUid, recipientUid).sorted()
+        val convData = mapOf(
+            "conversationId" to conversationId,
+            "participantUids" to participants,
+            "createdAt" to timestampMillis,
+            "updatedAt" to timestampMillis,
+            "lastMessage" to text.trim(),
+            "lastSenderUid" to currentUid
+        )
+        convRef.set(convData, SetOptions.merge())
+
+        val msgData = mapOf(
+            "id" to msgId,
+            "conversationId" to conversationId,
+            "friendId" to recipientUid,
+            "senderUid" to currentUid,
+            "senderName" to senderProfile.alias,
+            "senderAvatar" to senderProfile.avatar,
+            "messageText" to text.trim(),
+            "timestamp" to timeStr,
+            "timestampMillis" to timestampMillis,
+            "messageType" to "TEXT"
+        )
+
+        convRef.collection("messages").document(msgId)
+            .set(msgData)
+            .addOnSuccessListener { onResult(true, null) }
+            .addOnFailureListener { e -> onResult(false, e.localizedMessage) }
+    }
+
+    // ==========================================
+    // PRIVATE 1-ON-1 AUDIO/VIDEO CALL SIGNALING
+    // ==========================================
+    fun attachCallSignalingListener(callId: String, onUpdate: (PrivateCallSession?) -> Unit) {
+        callSignalingListenerRegistration?.remove()
+        callSignalingListenerRegistration = db.collection("calls").document(callId)
+            .addSnapshotListener { snapshot, error ->
+                if (error != null) {
+                    Log.w(TAG, "Notice in call signaling: ${error.message}")
+                    return@addSnapshotListener
+                }
+                if (snapshot != null && snapshot.exists()) {
+                    val session = PrivateCallSession(
+                        callId = callId,
+                        callerUid = snapshot.getString("callerUid") ?: "",
+                        callerName = snapshot.getString("callerName") ?: "",
+                        callerAvatar = snapshot.getString("callerAvatar") ?: "😎",
+                        calleeUid = snapshot.getString("calleeUid") ?: "",
+                        calleeName = snapshot.getString("calleeName") ?: "",
+                        status = snapshot.getString("status") ?: "IDLE",
+                        type = snapshot.getString("type") ?: "VIDEO",
+                        isCameraEnabled = snapshot.getBoolean("isCameraEnabled") ?: true,
+                        isMicMuted = snapshot.getBoolean("isMicMuted") ?: false,
+                        createdAt = snapshot.getLong("createdAt") ?: System.currentTimeMillis()
+                    )
+                    _activeCallSessionFlow.value = session
+                    onUpdate(session)
+                } else {
+                    _activeCallSessionFlow.value = null
+                    onUpdate(null)
+                }
+            }
+    }
+
+    fun initiateCall(
+        callId: String,
+        calleeUid: String,
+        calleeName: String,
+        senderProfile: StudentProfile,
+        type: String = "VIDEO",
+        onResult: (Boolean, String?) -> Unit = { _, _ -> }
+    ) {
+        val currentUid = auth.currentUser?.uid ?: return onResult(false, "Not authenticated")
+        val callData = mapOf(
+            "callId" to callId,
+            "callerUid" to currentUid,
+            "callerName" to senderProfile.alias,
+            "callerAvatar" to senderProfile.avatar,
+            "calleeUid" to calleeUid,
+            "calleeName" to calleeName,
+            "status" to "CALLING",
+            "type" to type,
+            "isCameraEnabled" to true,
+            "isMicMuted" to false,
+            "createdAt" to System.currentTimeMillis()
+        )
+        db.collection("calls").document(callId)
+            .set(callData)
+            .addOnSuccessListener { onResult(true, null) }
+            .addOnFailureListener { e -> onResult(false, e.localizedMessage) }
+    }
+
+    fun updateCallStatus(callId: String, newStatus: String) {
+        try {
+            db.collection("calls").document(callId).update("status", newStatus)
+        } catch (_: Exception) {}
+    }
+
+    fun updateCallMediaControls(callId: String, isCameraEnabled: Boolean, isMicMuted: Boolean) {
+        try {
+            db.collection("calls").document(callId).update(
+                mapOf(
+                    "isCameraEnabled" to isCameraEnabled,
+                    "isMicMuted" to isMicMuted
+                )
+            )
+        } catch (_: Exception) {}
     }
 
     // ==========================================

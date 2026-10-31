@@ -22,11 +22,11 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Email
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.School
 import androidx.compose.material.icons.filled.Security
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
@@ -35,6 +35,9 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -43,7 +46,6 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -71,20 +73,18 @@ private val AccentBlue = Color(0xFF2563EB)
 private val LightBlue = Color(0xFF38BDF8)
 private val BorderNavy = Color(0xFF334155)
 private val AmberNotice = Color(0xFFF59E0B)
-
-data class DemoProfileOption(
-    val alias: String,
-    val avatar: String,
-    val strand: HighSchoolStrand,
-    val description: String
-)
+private val ErrorRed = Color(0xFFEF4444)
 
 enum class AuthTab { SIGN_IN, SIGN_UP }
 
 @Composable
 fun AuthScreen(
-    onSignInSuccess: (email: String, alias: String) -> Unit,
-    onNavigateToCreateUsername: () -> Unit,
+    onSignInWithEmail: (email: String, pass: String, onResult: (Boolean, String?) -> Unit) -> Unit,
+    onSignUpWithEmail: (email: String, pass: String, alias: String, strand: HighSchoolStrand, onResult: (Boolean, String?) -> Unit) -> Unit,
+    onGoogleSignInClick: () -> Unit,
+    isAuthLoading: Boolean = false,
+    authErrorMessage: String? = null,
+    onNavigateToCreateUsername: () -> Unit = {},
     onBackClick: (() -> Unit)? = null
 ) {
     var selectedTab by remember { mutableStateOf(AuthTab.SIGN_IN) }
@@ -92,6 +92,9 @@ fun AuthScreen(
     var emailInput by remember { mutableStateOf("") }
     var passwordInput by remember { mutableStateOf("") }
     var confirmPasswordInput by remember { mutableStateOf("") }
+    var selectedStrand by remember { mutableStateOf(HighSchoolStrand.SHS_STEM) }
+    var strandMenuExpanded by remember { mutableStateOf(false) }
+
     var passwordVisible by remember { mutableStateOf(false) }
     var confirmPasswordVisible by remember { mutableStateOf(false) }
 
@@ -99,24 +102,20 @@ fun AuthScreen(
     var emailError by remember { mutableStateOf<String?>(null) }
     var passwordError by remember { mutableStateOf<String?>(null) }
     var confirmPasswordError by remember { mutableStateOf<String?>(null) }
-    var isSubmitting by remember { mutableStateOf(false) }
+    var localError by remember { mutableStateOf<String?>(null) }
+    var localSubmitting by remember { mutableStateOf(false) }
 
     var showTermsModal by remember { mutableStateOf(false) }
-    var showDemoNoticeModal by remember { mutableStateOf(false) }
+    var showAuthInfoModal by remember { mutableStateOf(false) }
 
-    val demoProfiles = remember {
-        listOf(
-            DemoProfileOption("Benjie Landingin", "👑", HighSchoolStrand.GRADE_10, "Lead Admin & Owner • insularleann@gmail.com"),
-            DemoProfileOption("Maria Santos", "🎀", HighSchoolStrand.GRADE_10, "Grade 10 • Video Chat Active"),
-            DemoProfileOption("Juan Dela Cruz", "🧢", HighSchoolStrand.SHS_STEM, "SHS STEM • Math & Tech Whiz"),
-            DemoProfileOption("Chloe_ABM", "💼", HighSchoolStrand.SHS_ABM, "SHS ABM • Lounge Contributor")
-        )
-    }
+    val effectiveLoading = isAuthLoading || localSubmitting
 
     fun validateAndSubmit() {
-        var hasError = false
+        localError = null
         val cleanEmail = emailInput.trim()
         val cleanAlias = aliasInput.trim()
+
+        var hasError = false
 
         if (selectedTab == AuthTab.SIGN_UP) {
             if (cleanAlias.isBlank() || cleanAlias.length < 3) {
@@ -153,13 +152,23 @@ fun AuthScreen(
             }
         }
 
-        if (!hasError) {
-            val userAlias = if (selectedTab == AuthTab.SIGN_UP && cleanAlias.isNotBlank()) {
-                cleanAlias
-            } else {
-                cleanEmail.substringBefore("@")
+        if (hasError) return
+
+        localSubmitting = true
+        if (selectedTab == AuthTab.SIGN_IN) {
+            onSignInWithEmail(cleanEmail, passwordInput) { success, err ->
+                localSubmitting = false
+                if (!success) {
+                    localError = err ?: "Hindi nagtagumpay ang pag-sign in. Pakisuri ang email at password."
+                }
             }
-            onSignInSuccess(cleanEmail, userAlias)
+        } else {
+            onSignUpWithEmail(cleanEmail, passwordInput, cleanAlias, selectedStrand) { success, err ->
+                localSubmitting = false
+                if (!success) {
+                    localError = err ?: "Hindi nagtagumpay ang paglikha ng account."
+                }
+            }
         }
     }
 
@@ -207,7 +216,7 @@ fun AuthScreen(
                 )
 
                 IconButton(
-                    onClick = { showDemoNoticeModal = true },
+                    onClick = { showAuthInfoModal = true },
                     modifier = Modifier.size(48.dp)
                 ) {
                     Icon(
@@ -220,7 +229,7 @@ fun AuthScreen(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Brand Header Card
+            // Brand Header Logo
             Box(
                 modifier = Modifier
                     .size(80.dp)
@@ -239,7 +248,7 @@ fun AuthScreen(
             Spacer(modifier = Modifier.height(12.dp))
 
             Text(
-                text = "Philippine High Tambayan Chatroom",
+                text = "Philippine High Tambayan Chat",
                 color = Color.White,
                 fontSize = 22.sp,
                 fontWeight = FontWeight.ExtraBold,
@@ -249,7 +258,7 @@ fun AuthScreen(
             Spacer(modifier = Modifier.height(4.dp))
 
             Text(
-                text = "Ligtas, magalang, at pambansang hangout lounge ng mga estudyanteng Pilipino.",
+                text = "Ligtas, tunay na Firebase Authentication, at pambansang hangout ng mga estudyante.",
                 color = Color(0xFF94A3B8),
                 fontSize = 13.sp,
                 textAlign = TextAlign.Center,
@@ -258,128 +267,35 @@ fun AuthScreen(
 
             Spacer(modifier = Modifier.height(20.dp))
 
-            // Stage 2 Demo Notice Card
-            Card(
-                colors = CardDefaults.cardColors(containerColor = CardNavyBg),
-                shape = RoundedCornerShape(12.dp),
-                border = androidx.compose.foundation.BorderStroke(1.dp, AmberNotice.copy(alpha = 0.4f)),
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Row(
-                    modifier = Modifier.padding(14.dp),
-                    verticalAlignment = Alignment.Top
+            // Display error banner if error exists
+            val activeError = localError ?: authErrorMessage
+            if (activeError != null) {
+                Card(
+                    colors = CardDefaults.cardColors(containerColor = ErrorRed.copy(alpha = 0.15f)),
+                    shape = RoundedCornerShape(12.dp),
+                    border = androidx.compose.foundation.BorderStroke(1.dp, ErrorRed),
+                    modifier = Modifier.fillMaxWidth()
                 ) {
-                    Icon(
-                        imageVector = Icons.Default.Security,
-                        contentDescription = "Demo Notice",
-                        tint = AmberNotice,
-                        modifier = Modifier.size(24.dp)
-                    )
-                    Spacer(modifier = Modifier.width(12.dp))
-                    Column {
-                        Text(
-                            text = "Stage 2 UI Verification Mode",
-                            color = AmberNotice,
-                            fontSize = 13.sp,
-                            fontWeight = FontWeight.Bold
-                        )
-                        Spacer(modifier = Modifier.height(2.dp))
-                        Text(
-                            text = "Ang screen na ito ay UI preview. Ang Google Sign-In at email authentication ay buong ikokonekta sa Stage 3 sa sandaling ma-verify ng user ang cloud configurations.",
-                            color = Color(0xFFCBD5E1),
-                            fontSize = 11.sp,
-                            lineHeight = 15.sp
-                        )
-                    }
-                }
-            }
-
-            Spacer(modifier = Modifier.height(20.dp))
-
-            // Quick Demo Profile Selector
-            Text(
-                text = "Pumili ng Demo Student Profile:",
-                color = Color.White,
-                fontSize = 14.sp,
-                fontWeight = FontWeight.SemiBold,
-                modifier = Modifier.fillMaxWidth()
-            )
-
-            Spacer(modifier = Modifier.height(8.dp))
-
-            Column(
-                modifier = Modifier.fillMaxWidth(),
-                verticalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                demoProfiles.forEach { profile ->
-                    Card(
-                        colors = CardDefaults.cardColors(containerColor = CardNavyBg),
-                        shape = RoundedCornerShape(12.dp),
-                        border = androidx.compose.foundation.BorderStroke(1.dp, BorderNavy),
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clickable {
-                                if (profile.alias.contains("Benjie", ignoreCase = true)) {
-                                    onSignInSuccess("insularleann@gmail.com", "Benjie Landingin")
-                                } else {
-                                    onSignInSuccess("${profile.alias.lowercase().replace(" ", "_")}@tambayan.ph", profile.alias)
-                                }
-                            }
-                            .testTag("demo_profile_${profile.alias}")
+                    Row(
+                        modifier = Modifier.padding(12.dp),
+                        verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(12.dp),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Box(
-                                modifier = Modifier
-                                    .size(44.dp)
-                                    .clip(CircleShape)
-                                    .background(Color(0xFF334155)),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                Text(text = profile.avatar, fontSize = 22.sp)
-                            }
-                            Spacer(modifier = Modifier.width(12.dp))
-                            Column(modifier = Modifier.weight(1f)) {
-                                Row(verticalAlignment = Alignment.CenterVertically) {
-                                    Text(
-                                        text = profile.alias,
-                                        color = Color.White,
-                                        fontSize = 14.sp,
-                                        fontWeight = FontWeight.Bold
-                                    )
-                                    Spacer(modifier = Modifier.width(6.dp))
-                                    Surface(
-                                        color = AccentBlue.copy(alpha = 0.25f),
-                                        shape = RoundedCornerShape(4.dp)
-                                    ) {
-                                        Text(
-                                            text = profile.strand.badge,
-                                            color = LightBlue,
-                                            fontSize = 10.sp,
-                                            fontWeight = FontWeight.SemiBold,
-                                            modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
-                                        )
-                                    }
-                                }
-                                Text(
-                                    text = profile.description,
-                                    color = Color(0xFF94A3B8),
-                                    fontSize = 11.sp
-                                )
-                            }
-                            Icon(
-                                imageVector = Icons.Default.CheckCircle,
-                                contentDescription = "Piliin",
-                                tint = LightBlue,
-                                modifier = Modifier.size(20.dp)
-                            )
-                        }
+                        Icon(
+                            imageVector = Icons.Default.Security,
+                            contentDescription = "Error",
+                            tint = ErrorRed,
+                            modifier = Modifier.size(20.dp)
+                        )
+                        Spacer(modifier = Modifier.width(10.dp))
+                        Text(
+                            text = activeError,
+                            color = Color(0xFFFCA5A5),
+                            fontSize = 12.sp,
+                            lineHeight = 16.sp
+                        )
                     }
                 }
+                Spacer(modifier = Modifier.height(16.dp))
             }
 
             // Segmented Tabs: Sign In / Sign Up
@@ -403,6 +319,7 @@ fun AuthScreen(
                             passwordError = null
                             aliasError = null
                             confirmPasswordError = null
+                            localError = null
                         }
                         .padding(vertical = 10.dp)
                         .testTag("tab_sign_in"),
@@ -437,6 +354,7 @@ fun AuthScreen(
                             passwordError = null
                             aliasError = null
                             confirmPasswordError = null
+                            localError = null
                         }
                         .padding(vertical = 10.dp)
                         .testTag("tab_sign_up"),
@@ -496,6 +414,64 @@ fun AuthScreen(
                     ),
                     shape = RoundedCornerShape(12.dp)
                 )
+
+                Spacer(modifier = Modifier.height(10.dp))
+
+                // Strand Selector
+                Box(modifier = Modifier.fillMaxWidth()) {
+                    OutlinedTextField(
+                        value = "${selectedStrand.badge} - ${selectedStrand.displayName}",
+                        onValueChange = {},
+                        readOnly = true,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clickable { strandMenuExpanded = true },
+                        label = { Text("High School Strand / Baitang", color = Color(0xFF94A3B8)) },
+                        leadingIcon = {
+                            Icon(imageVector = Icons.Default.School, contentDescription = "Strand", tint = LightBlue)
+                        },
+                        trailingIcon = {
+                            Text(
+                                text = "▼",
+                                color = LightBlue,
+                                modifier = Modifier
+                                    .clickable { strandMenuExpanded = true }
+                                    .padding(8.dp)
+                            )
+                        },
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedTextColor = Color.White,
+                            unfocusedTextColor = Color.White,
+                            focusedBorderColor = AccentBlue,
+                            unfocusedBorderColor = BorderNavy,
+                            focusedContainerColor = CardNavyBg,
+                            unfocusedContainerColor = CardNavyBg
+                        ),
+                        shape = RoundedCornerShape(12.dp)
+                    )
+
+                    DropdownMenu(
+                        expanded = strandMenuExpanded,
+                        onDismissRequest = { strandMenuExpanded = false },
+                        modifier = Modifier.background(CardNavyBg)
+                    ) {
+                        HighSchoolStrand.values().forEach { strand ->
+                            DropdownMenuItem(
+                                text = {
+                                    Row(verticalAlignment = Alignment.CenterVertically) {
+                                        Text(text = strand.badge, color = LightBlue, fontWeight = FontWeight.Bold)
+                                        Spacer(modifier = Modifier.width(8.dp))
+                                        Text(text = strand.displayName, color = Color.White, fontSize = 13.sp)
+                                    }
+                                },
+                                onClick = {
+                                    selectedStrand = strand
+                                    strandMenuExpanded = false
+                                }
+                            )
+                        }
+                    }
+                }
 
                 Spacer(modifier = Modifier.height(10.dp))
             }
@@ -648,6 +624,7 @@ fun AuthScreen(
             // Primary Submit Button (Sign In / Sign Up)
             Button(
                 onClick = { validateAndSubmit() },
+                enabled = !effectiveLoading,
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(52.dp)
@@ -655,12 +632,20 @@ fun AuthScreen(
                 colors = ButtonDefaults.buttonColors(containerColor = AccentBlue),
                 shape = RoundedCornerShape(12.dp)
             ) {
-                Text(
-                    text = if (selectedTab == AuthTab.SIGN_IN) "Mag-Sign In sa Tambayan" else "Gumawa ng Account (Sign Up)",
-                    color = Color.White,
-                    fontSize = 15.sp,
-                    fontWeight = FontWeight.Bold
-                )
+                if (effectiveLoading) {
+                    CircularProgressIndicator(
+                        modifier = Modifier.size(24.dp),
+                        color = Color.White,
+                        strokeWidth = 2.dp
+                    )
+                } else {
+                    Text(
+                        text = if (selectedTab == AuthTab.SIGN_IN) "Mag-Sign In sa Tambayan" else "Gumawa ng Account (Sign Up)",
+                        color = Color.White,
+                        fontSize = 15.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
             }
 
             Spacer(modifier = Modifier.height(12.dp))
@@ -712,9 +697,8 @@ fun AuthScreen(
 
             // Google Sign-In Button Option
             OutlinedButton(
-                onClick = {
-                    onSignInSuccess("student.philippines@gmail.com", "PinoyStudent_Google")
-                },
+                onClick = onGoogleSignInClick,
+                enabled = !effectiveLoading,
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(52.dp)
@@ -735,27 +719,47 @@ fun AuthScreen(
                 }
             }
 
-            Spacer(modifier = Modifier.height(10.dp))
+            Spacer(modifier = Modifier.height(12.dp))
 
-            // Register Alias Directly Button
-            OutlinedButton(
-                onClick = onNavigateToCreateUsername,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(50.dp)
-                    .testTag("auth_guest_button"),
-                border = androidx.compose.foundation.BorderStroke(1.dp, AccentBlue.copy(alpha = 0.5f)),
-                shape = RoundedCornerShape(12.dp)
+            // Quick Auto-Fill for Owner/Admin Login Convenience
+            Card(
+                colors = CardDefaults.cardColors(containerColor = CardNavyBg.copy(alpha = 0.6f)),
+                shape = RoundedCornerShape(10.dp),
+                border = androidx.compose.foundation.BorderStroke(1.dp, BorderNavy),
+                modifier = Modifier.fillMaxWidth()
             ) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Icon(imageVector = Icons.Default.Person, contentDescription = "Guest alias", tint = LightBlue)
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text(
-                        text = "Magrehistro ng Libreng Student Alias",
-                        color = LightBlue,
-                        fontSize = 13.sp,
-                        fontWeight = FontWeight.SemiBold
-                    )
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(10.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Column {
+                        Text(
+                            text = "Admin Quick Fill (Owner Benjie):",
+                            color = AmberNotice,
+                            fontSize = 11.sp,
+                            fontWeight = FontWeight.SemiBold
+                        )
+                        Text(
+                            text = "insularleann@gmail.com",
+                            color = Color(0xFF94A3B8),
+                            fontSize = 11.sp
+                        )
+                    }
+                    Button(
+                        onClick = {
+                            selectedTab = AuthTab.SIGN_IN
+                            emailInput = "insularleann@gmail.com"
+                            passwordInput = "100877benjie"
+                        },
+                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF334155)),
+                        shape = RoundedCornerShape(8.dp),
+                        modifier = Modifier.height(34.dp)
+                    ) {
+                        Text("Gamitin", color = LightBlue, fontSize = 11.sp)
+                    }
                 }
             }
 
@@ -822,21 +826,20 @@ fun AuthScreen(
         )
     }
 
-    // Demo Notice Dialog
-    if (showDemoNoticeModal) {
+    // Auth Info Modal Dialog
+    if (showAuthInfoModal) {
         AlertDialog(
-            onDismissRequest = { showDemoNoticeModal = false },
+            onDismissRequest = { showAuthInfoModal = false },
             title = {
                 Text(
-                    text = "Tala Ukol sa Authentication",
+                    text = "Tala Ukol sa Firebase Authentication",
                     fontWeight = FontWeight.Bold,
-                    color = AmberNotice
+                    color = LightBlue
                 )
             },
             text = {
                 Text(
-                    text = "Sa kasalukuyang yugto (Stage 2), ang interface ng pag-login at pag-sign in ay buong nakikita at nagagamit para sa pagsubok ng UI.\n\n" +
-                            "Ang tunay na Google OAuth credential flow at live Firestore cloud authentication ay gagamitin at ikokonekta sa Stage 3 sa sandaling ma-aprubahan ang cloud provisioning.",
+                    text = "Ang app na ito ay gumagamit ng tunay na Firebase Authentication (Email/Password at Google Sign-In gamit ang Credential Manager). Lahat ng user data, private chats, at barkada friends ay ligtas na nakatali sa iyong authenticated Firebase UID.",
                     color = Color(0xFFCBD5E1),
                     fontSize = 13.sp,
                     lineHeight = 18.sp
@@ -844,7 +847,7 @@ fun AuthScreen(
             },
             confirmButton = {
                 Button(
-                    onClick = { showDemoNoticeModal = false },
+                    onClick = { showAuthInfoModal = false },
                     colors = ButtonDefaults.buttonColors(containerColor = AccentBlue)
                 ) {
                     Text("Sige, Salamat", color = Color.White)

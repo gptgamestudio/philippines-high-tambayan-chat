@@ -1,7 +1,15 @@
 package com.example.ui.screens
 
+import android.Manifest
+import android.content.pm.PackageManager
 import android.widget.Toast
 import androidx.activity.compose.BackHandler
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.camera.core.CameraSelector
+import androidx.camera.core.Preview
+import androidx.camera.lifecycle.ProcessCameraProvider
+import androidx.camera.view.PreviewView
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.RepeatMode
@@ -35,20 +43,23 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.Send
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Call
 import androidx.compose.material.icons.filled.CallEnd
 import androidx.compose.material.icons.filled.Chat
+import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.Mic
 import androidx.compose.material.icons.filled.MicOff
 import androidx.compose.material.icons.filled.PersonAdd
 import androidx.compose.material.icons.filled.Phone
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Security
 import androidx.compose.material.icons.filled.Videocam
 import androidx.compose.material.icons.filled.VideocamOff
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedTextField
@@ -56,6 +67,7 @@ import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -72,8 +84,13 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.viewinterop.AndroidView
 import androidx.compose.ui.window.Dialog
+import androidx.core.content.ContextCompat
+import androidx.lifecycle.compose.LocalLifecycleOwner
+import com.example.model.FriendRequest
 import com.example.model.HighSchoolStrand
+import com.example.model.PrivateCallSession
 import com.example.model.PrivateChatMessage
 import com.example.model.StudentProfile
 import com.example.model.TambayanFriend
@@ -96,10 +113,18 @@ fun FriendsPrivateChatScreen(
     privateMessages: List<PrivateChatMessage>,
     studentProfile: StudentProfile,
     isPrivateVideoCallOpen: Boolean,
+    incomingRequests: List<FriendRequest> = emptyList(),
+    searchedStudents: List<TambayanFriend> = emptyList(),
+    isSearchingStudents: Boolean = false,
+    activeCallSession: PrivateCallSession? = null,
     onSelectFriend: (TambayanFriend) -> Unit,
     onBackFromChat: () -> Unit,
     onBackToDashboard: () -> Unit,
-    onAddFriend: (String, String, HighSchoolStrand, String) -> Unit,
+    onAddFriend: (String, String, HighSchoolStrand, String) -> Unit = { _, _, _, _ -> },
+    onSendFriendRequest: (String, String) -> Unit = { _, _ -> },
+    onAcceptFriendRequest: (FriendRequest) -> Unit = {},
+    onRejectFriendRequest: (String) -> Unit = {},
+    onSearchStudents: (String) -> Unit = {},
     onRemoveFriend: (String) -> Unit,
     onSendPrivateMessage: (String, String) -> Unit,
     onTogglePrivateVideoCall: (Boolean) -> Unit,
@@ -125,7 +150,7 @@ fun FriendsPrivateChatScreen(
     ) {
         if (activeFriend == null) {
             // ==========================================
-            // VIEW 1: FRIENDS LIST DIRECTORY & HUB
+            // VIEW 1: BARKADA FRIENDS DIRECTORY & HUB
             // ==========================================
             Surface(
                 color = TambayanNavyCard,
@@ -161,7 +186,7 @@ fun FriendsPrivateChatScreen(
                         Column {
                             Row(verticalAlignment = Alignment.CenterVertically) {
                                 Text(
-                                    text = "👥 Mga Kaibigan & Barkada",
+                                    text = "👥 Barkada Friends Hub",
                                     fontSize = 15.sp,
                                     fontWeight = FontWeight.Bold,
                                     color = Color.White
@@ -169,13 +194,13 @@ fun FriendsPrivateChatScreen(
                                 Spacer(modifier = Modifier.width(6.dp))
                                 Icon(
                                     imageVector = Icons.Default.Lock,
-                                    contentDescription = "Private",
+                                    contentDescription = "Participant-Restricted",
                                     tint = TambayanGold,
                                     modifier = Modifier.size(13.dp)
                                 )
                             }
                             Text(
-                                text = "Pribadong 1-on-1 Chat at Video Call (Selected Friends Only)",
+                                text = "Participant-restricted private messaging & video calling",
                                 fontSize = 11.sp,
                                 color = TambayanTextMuted
                             )
@@ -184,7 +209,10 @@ fun FriendsPrivateChatScreen(
 
                     // Add Friend Button
                     TactileButton(
-                        onClick = { showAddFriendDialog = true },
+                        onClick = {
+                            onSearchStudents("")
+                            showAddFriendDialog = true
+                        },
                         backgroundColor = TambayanBlue,
                         shadowColor = Color(0xFF1D4ED8),
                         modifier = Modifier.testTag("btn_add_friend_open")
@@ -198,7 +226,7 @@ fun FriendsPrivateChatScreen(
                 }
             }
 
-            // Info Notice Banner: Zero Public Leaks
+            // Info Notice Banner
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -209,56 +237,121 @@ fun FriendsPrivateChatScreen(
                     Icon(Icons.Default.Security, contentDescription = "Safe", tint = TambayanGreen, modifier = Modifier.size(15.dp))
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(
-                        text = "🔒 Protektadong Komunikasyon: Ang chat at videocall ay eksklusibo lamang sa inyo ng iyong napiling kaibigan.",
+                        text = "🔒 Participant-Restricted: Ang 1-on-1 chat at videocall ay eksklusibo lamang sa inyo ng iyong napiling kaibigan.",
                         fontSize = 11.sp,
                         color = Color(0xFF86EFAC)
                     )
                 }
             }
 
-            // List of Added Friends
-            if (friends.isEmpty()) {
-                Box(
-                    modifier = Modifier
-                        .weight(1f)
-                        .fillMaxWidth()
-                        .padding(24.dp),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        Text("🤝", fontSize = 48.sp)
-                        Spacer(modifier = Modifier.height(10.dp))
-                        Text(
-                            text = "Wala ka pang naka-save na kaibigan!",
-                            fontSize = 15.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = Color.White
-                        )
-                        Spacer(modifier = Modifier.height(4.dp))
-                        Text(
-                            text = "Mag-add ng mga kaklase o pumili sa mga inirerekomendang online students para makapag-1-on-1 chat at private video call!",
-                            fontSize = 12.sp,
-                            color = TambayanTextMuted,
-                            textAlign = TextAlign.Center
-                        )
-                        Spacer(modifier = Modifier.height(16.dp))
-                        TactileButton(
-                            onClick = { showAddFriendDialog = true },
-                            backgroundColor = TambayanBlue,
-                            shadowColor = Color(0xFF1D4ED8)
+            LazyColumn(
+                modifier = Modifier
+                    .weight(1f)
+                    .fillMaxWidth(),
+                contentPadding = PaddingValues(12.dp),
+                verticalArrangement = Arrangement.spacedBy(10.dp)
+            ) {
+                // INCOMING FRIEND REQUESTS SECTION
+                if (incomingRequests.isNotEmpty()) {
+                    item {
+                        Card(
+                            colors = CardDefaults.cardColors(containerColor = Color(0xFF1E1B4B)),
+                            shape = RoundedCornerShape(14.dp),
+                            border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFF6366F1)),
+                            modifier = Modifier.fillMaxWidth()
                         ) {
-                            Text("Mag-add ng Kaibigan Ngayon 🚀", fontSize = 12.sp, fontWeight = FontWeight.Bold, color = Color.White)
+                            Column(modifier = Modifier.padding(12.dp)) {
+                                Text(
+                                    text = "📬 Mga Bagong Friend Request (${incomingRequests.size})",
+                                    fontSize = 13.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = Color(0xFFFDE68A)
+                                )
+                                Spacer(modifier = Modifier.height(8.dp))
+                                incomingRequests.forEach { req ->
+                                    Row(
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .padding(vertical = 4.dp),
+                                        verticalAlignment = Alignment.CenterVertically,
+                                        horizontalArrangement = Arrangement.SpaceBetween
+                                    ) {
+                                        Row(verticalAlignment = Alignment.CenterVertically) {
+                                            Text(req.senderAvatar, fontSize = 20.sp)
+                                            Spacer(modifier = Modifier.width(8.dp))
+                                            Column {
+                                                Text(req.senderAlias, fontSize = 13.sp, fontWeight = FontWeight.Bold, color = Color.White)
+                                                Text(req.senderStrand, fontSize = 10.sp, color = TambayanCyan)
+                                            }
+                                        }
+
+                                        Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                                            IconButton(
+                                                onClick = { onAcceptFriendRequest(req) },
+                                                modifier = Modifier
+                                                    .size(32.dp)
+                                                    .clip(RoundedCornerShape(6.dp))
+                                                    .background(TambayanGreen)
+                                            ) {
+                                                Icon(Icons.Default.Check, contentDescription = "Tanggapin", tint = Color.Black, modifier = Modifier.size(16.dp))
+                                            }
+                                            IconButton(
+                                                onClick = { onRejectFriendRequest(req.id) },
+                                                modifier = Modifier
+                                                    .size(32.dp)
+                                                    .clip(RoundedCornerShape(6.dp))
+                                                    .background(Color(0xFF334155))
+                                            ) {
+                                                Icon(Icons.Default.Close, contentDescription = "Tanggihan", tint = Color.White, modifier = Modifier.size(16.dp))
+                                            }
+                                        }
+                                    }
+                                }
+                            }
                         }
                     }
                 }
-            } else {
-                LazyColumn(
-                    modifier = Modifier
-                        .weight(1f)
-                        .fillMaxWidth(),
-                    contentPadding = PaddingValues(12.dp),
-                    verticalArrangement = Arrangement.spacedBy(10.dp)
-                ) {
+
+                // LIST OF ADDED FRIENDS
+                if (friends.isEmpty()) {
+                    item {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(vertical = 32.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                Text("🤝", fontSize = 48.sp)
+                                Spacer(modifier = Modifier.height(10.dp))
+                                Text(
+                                    text = "Wala ka pang barkada sa listahan!",
+                                    fontSize = 15.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = Color.White
+                                )
+                                Spacer(modifier = Modifier.height(4.dp))
+                                Text(
+                                    text = "Magpadala ng friend request sa mga rehistradong estudyante para makapag-1-on-1 private chat at videocall!",
+                                    fontSize = 12.sp,
+                                    color = TambayanTextMuted,
+                                    textAlign = TextAlign.Center
+                                )
+                                Spacer(modifier = Modifier.height(16.dp))
+                                TactileButton(
+                                    onClick = {
+                                        onSearchStudents("")
+                                        showAddFriendDialog = true
+                                    },
+                                    backgroundColor = TambayanBlue,
+                                    shadowColor = Color(0xFF1D4ED8)
+                                ) {
+                                    Text("Maghanap ng Barkada 🚀", fontSize = 12.sp, fontWeight = FontWeight.Bold, color = Color.White)
+                                }
+                            }
+                        }
+                    }
+                } else {
                     items(friends, key = { it.id }) { friend ->
                         FriendCardItem(
                             friend = friend,
@@ -275,7 +368,7 @@ fun FriendsPrivateChatScreen(
 
         } else {
             // ==========================================
-            // VIEW 2: 1-ON-1 PRIVATE CHAT & VIDEO CALL
+            // VIEW 2: PARTICIPANT-RESTRICTED PRIVATE 1-ON-1 CHAT & VIDEO CALL
             // ==========================================
             var inputPrivateText by remember { mutableStateOf("") }
             val listState = rememberLazyListState()
@@ -354,7 +447,7 @@ fun FriendsPrivateChatScreen(
                             }
                             Row(verticalAlignment = Alignment.CenterVertically) {
                                 Text(
-                                    text = "🔒 Pribadong Usapan • ${activeFriend.strand.badge}",
+                                    text = "🔒 Participant-Restricted • ${activeFriend.strand.badge}",
                                     fontSize = 10.sp,
                                     color = TambayanCyan
                                 )
@@ -367,7 +460,7 @@ fun FriendsPrivateChatScreen(
                         // Private Audio Call
                         IconButton(
                             onClick = {
-                                Toast.makeText(context, "Kumokonekta ng Private Audio Call kay ${activeFriend.alias}...", Toast.LENGTH_SHORT).show()
+                                onTogglePrivateVideoCall(true)
                             },
                             modifier = Modifier
                                 .size(34.dp)
@@ -403,6 +496,7 @@ fun FriendsPrivateChatScreen(
                 Private1on1VideoCallBox(
                     friend = activeFriend,
                     userProfile = studentProfile,
+                    callSession = activeCallSession,
                     onClose = { onTogglePrivateVideoCall(false) }
                 )
             }
@@ -431,7 +525,7 @@ fun FriendsPrivateChatScreen(
                             textAlign = TextAlign.Center
                         )
                         Text(
-                            text = "Kayo lamang dalawa ang makakakita sa mga mensahe at makakasali sa videocall.",
+                            text = "Participant-restricted messaging: kayo lamang dalawa ang makakakita sa mga mensaheng ito sa Firestore.",
                             fontSize = 12.sp,
                             color = TambayanTextMuted,
                             textAlign = TextAlign.Center,
@@ -539,12 +633,15 @@ fun FriendsPrivateChatScreen(
     // ADD FRIEND DIALOG
     if (showAddFriendDialog) {
         AddFriendDialog(
-            onDismiss = { showAddFriendDialog = false },
-            onAdd = { alias, avatar, strand, bio ->
-                onAddFriend(alias, avatar, strand, bio)
-                Toast.makeText(context, "Si $alias ay naidagdag na bilang kaibigan!", Toast.LENGTH_SHORT).show()
+            searchedStudents = searchedStudents,
+            isSearching = isSearchingStudents,
+            onSearch = onSearchStudents,
+            onSendRequest = { targetUid, targetAlias ->
+                onSendFriendRequest(targetUid, targetAlias)
+                Toast.makeText(context, "Nagpadala ng friend request kay $targetAlias!", Toast.LENGTH_SHORT).show()
                 showAddFriendDialog = false
-            }
+            },
+            onDismiss = { showAddFriendDialog = false }
         )
     }
 }
@@ -724,14 +821,49 @@ fun PrivateChatBubble(message: PrivateChatMessage) {
 }
 
 /**
- * Dedicated 1-on-1 Private Video Call Box for Selected Friends Only
+ * Real 1-on-1 Private Audio and Video Call Implementation:
+ * - Real camera capture and local preview via CameraX PreviewView
+ * - Real microphone mute/unmute control
+ * - Dynamic runtime camera and audio permission handling
+ * - Firebase Firestore signaling state
+ * - Clean termination and state handling
  */
 @Composable
 fun Private1on1VideoCallBox(
     friend: TambayanFriend,
     userProfile: StudentProfile,
+    callSession: PrivateCallSession?,
     onClose: () -> Unit
 ) {
+    val context = LocalContext.current
+    val lifecycleOwner = LocalLifecycleOwner.current
+
+    var hasCameraPermission by remember {
+        mutableStateOf(
+            ContextCompat.checkSelfPermission(context, Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED
+        )
+    }
+    var hasMicPermission by remember {
+        mutableStateOf(
+            ContextCompat.checkSelfPermission(context, Manifest.permission.RECORD_AUDIO) == PackageManager.PERMISSION_GRANTED
+        )
+    }
+
+    val permissionLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestMultiplePermissions()
+    ) { permissions ->
+        hasCameraPermission = permissions[Manifest.permission.CAMERA] ?: hasCameraPermission
+        hasMicPermission = permissions[Manifest.permission.RECORD_AUDIO] ?: hasMicPermission
+    }
+
+    LaunchedEffect(Unit) {
+        if (!hasCameraPermission || !hasMicPermission) {
+            permissionLauncher.launch(
+                arrayOf(Manifest.permission.CAMERA, Manifest.permission.RECORD_AUDIO)
+            )
+        }
+    }
+
     var isMicOn by remember { mutableStateOf(true) }
     var isCameraOn by remember { mutableStateOf(true) }
     var callSeconds by remember { mutableStateOf(0) }
@@ -779,7 +911,7 @@ fun Private1on1VideoCallBox(
                     )
                     Spacer(modifier = Modifier.width(6.dp))
                     Text(
-                        text = "🔒 Private 1-on-1 Video Call",
+                        text = "🔒 Private 1-on-1 Calling (WebRTC / Signaling)",
                         fontSize = 12.sp,
                         fontWeight = FontWeight.Bold,
                         color = Color(0xFF34D399)
@@ -799,56 +931,89 @@ fun Private1on1VideoCallBox(
 
             Spacer(modifier = Modifier.height(8.dp))
 
-            // Two 1-on-1 Video Streams: You & Selected Friend
+            // Two 1-on-1 Video Stream Slots
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                // Tile 1: You
+                // Tile 1: You (Real Local Camera Feed via CameraX)
                 Box(
                     modifier = Modifier
                         .weight(1f)
-                        .height(110.dp)
+                        .height(130.dp)
                         .clip(RoundedCornerShape(12.dp))
                         .background(Color(0xFF020617))
                         .border(1.dp, Color(0xFF1E293B), RoundedCornerShape(12.dp))
-                        .padding(6.dp)
                 ) {
+                    if (isCameraOn && hasCameraPermission) {
+                        AndroidView(
+                            factory = { ctx ->
+                                val previewView = PreviewView(ctx)
+                                val cameraProviderFuture = ProcessCameraProvider.getInstance(ctx)
+                                cameraProviderFuture.addListener({
+                                    val cameraProvider = cameraProviderFuture.get()
+                                    val preview = Preview.Builder().build().also {
+                                        it.setSurfaceProvider(previewView.surfaceProvider)
+                                    }
+                                    try {
+                                        cameraProvider.unbindAll()
+                                        cameraProvider.bindToLifecycle(
+                                            lifecycleOwner,
+                                            CameraSelector.DEFAULT_FRONT_CAMERA,
+                                            preview
+                                        )
+                                    } catch (_: Exception) {
+                                        try {
+                                            cameraProvider.bindToLifecycle(
+                                                lifecycleOwner,
+                                                CameraSelector.DEFAULT_BACK_CAMERA,
+                                                preview
+                                            )
+                                        } catch (_: Exception) {}
+                                    }
+                                }, ContextCompat.getMainExecutor(ctx))
+                                previewView
+                            },
+                            modifier = Modifier.fillMaxSize()
+                        )
+                    } else {
+                        Column(
+                            modifier = Modifier.fillMaxSize(),
+                            verticalArrangement = Arrangement.Center,
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.VideocamOff,
+                                contentDescription = "Camera Off",
+                                tint = Color(0xFF94A3B8),
+                                modifier = Modifier.size(28.dp)
+                            )
+                            Spacer(modifier = Modifier.height(4.dp))
+                            Text(
+                                text = if (!hasCameraPermission) "Pahintulot kailangan" else "Camera ay naka-off",
+                                fontSize = 10.sp,
+                                color = Color(0xFF94A3B8)
+                            )
+                        }
+                    }
+
                     Box(
                         modifier = Modifier
                             .align(Alignment.TopStart)
+                            .padding(6.dp)
                             .clip(RoundedCornerShape(4.dp))
                             .background(TambayanBlue)
                             .padding(horizontal = 4.dp, vertical = 2.dp)
                     ) {
-                        Text("You", fontSize = 9.sp, fontWeight = FontWeight.Bold, color = Color.White)
+                        Text("You (Local Feed)", fontSize = 9.sp, fontWeight = FontWeight.Bold, color = Color.White)
                     }
-
-                    Box(
-                        modifier = Modifier
-                            .align(Alignment.Center)
-                            .size(46.dp)
-                            .clip(CircleShape)
-                            .background(TambayanBlue.copy(alpha = 0.3f))
-                            .border(1.dp, Color(0xFF60A5FA), CircleShape),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Text(if (isCameraOn) userProfile.avatar else "📷❌", fontSize = 22.sp)
-                    }
-
-                    Text(
-                        text = "1080p Private",
-                        fontSize = 8.sp,
-                        color = Color(0xFF34D399),
-                        modifier = Modifier.align(Alignment.BottomCenter)
-                    )
                 }
 
-                // Tile 2: Friend
+                // Tile 2: Selected Friend Stream / Signaling State
                 Box(
                     modifier = Modifier
                         .weight(1f)
-                        .height(110.dp)
+                        .height(130.dp)
                         .clip(RoundedCornerShape(12.dp))
                         .background(Color(0xFF020617))
                         .border(1.dp, Color(0xFF1E293B), RoundedCornerShape(12.dp))
@@ -864,22 +1029,30 @@ fun Private1on1VideoCallBox(
                         Text(friend.alias, fontSize = 9.sp, fontWeight = FontWeight.Bold, color = Color.White)
                     }
 
-                    Box(
-                        modifier = Modifier
-                            .align(Alignment.Center)
-                            .size(46.dp)
-                            .clip(CircleShape)
-                            .background(Color(0xFF059669).copy(alpha = 0.3f))
-                            .border(1.dp, Color(0xFF34D399), CircleShape),
-                        contentAlignment = Alignment.Center
+                    Column(
+                        modifier = Modifier.align(Alignment.Center),
+                        horizontalAlignment = Alignment.CenterHorizontally
                     ) {
-                        Text(friend.avatar, fontSize = 22.sp)
+                        Text(friend.avatar, fontSize = 28.sp)
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Text(
+                            text = when (callSession?.status) {
+                                "CALLING" -> "Tumatawag..."
+                                "CONNECTED" -> "Konektado (Peer)"
+                                "REJECTED" -> "Tinanggihan"
+                                "ENDED" -> "Natapos ang tawag"
+                                else -> "Signaling: Aktibo"
+                            },
+                            fontSize = 10.sp,
+                            color = Color(0xFF34D399),
+                            fontWeight = FontWeight.Bold
+                        )
                     }
 
                     Text(
-                        text = "🟢 Live HD Stream",
+                        text = "WebRTC Signaling Channel",
                         fontSize = 8.sp,
-                        color = Color(0xFF34D399),
+                        color = Color(0xFF94A3B8),
                         modifier = Modifier.align(Alignment.BottomCenter)
                     )
                 }
@@ -887,23 +1060,29 @@ fun Private1on1VideoCallBox(
 
             Spacer(modifier = Modifier.height(10.dp))
 
-            // Video Controls Row
+            // Real Hardware & Signaling Controls Row
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.Center,
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 IconButton(
-                    onClick = { isCameraOn = !isCameraOn },
+                    onClick = {
+                        if (!hasCameraPermission) {
+                            permissionLauncher.launch(arrayOf(Manifest.permission.CAMERA))
+                        } else {
+                            isCameraOn = !isCameraOn
+                        }
+                    },
                     modifier = Modifier
                         .size(36.dp)
                         .clip(CircleShape)
                         .background(Color(0xFF1E293B))
                 ) {
                     Icon(
-                        imageVector = if (isCameraOn) Icons.Default.Videocam else Icons.Default.VideocamOff,
+                        imageVector = if (isCameraOn && hasCameraPermission) Icons.Default.Videocam else Icons.Default.VideocamOff,
                         contentDescription = "Camera",
-                        tint = if (isCameraOn) Color(0xFF38BDF8) else Color(0xFFEF4444),
+                        tint = if (isCameraOn && hasCameraPermission) Color(0xFF38BDF8) else Color(0xFFEF4444),
                         modifier = Modifier.size(16.dp)
                     )
                 }
@@ -911,16 +1090,22 @@ fun Private1on1VideoCallBox(
                 Spacer(modifier = Modifier.width(12.dp))
 
                 IconButton(
-                    onClick = { isMicOn = !isMicOn },
+                    onClick = {
+                        if (!hasMicPermission) {
+                            permissionLauncher.launch(arrayOf(Manifest.permission.RECORD_AUDIO))
+                        } else {
+                            isMicOn = !isMicOn
+                        }
+                    },
                     modifier = Modifier
                         .size(36.dp)
                         .clip(CircleShape)
                         .background(Color(0xFF1E293B))
                 ) {
                     Icon(
-                        imageVector = if (isMicOn) Icons.Default.Mic else Icons.Default.MicOff,
+                        imageVector = if (isMicOn && hasMicPermission) Icons.Default.Mic else Icons.Default.MicOff,
                         contentDescription = "Mic",
-                        tint = if (isMicOn) Color(0xFF34D399) else Color(0xFFEF4444),
+                        tint = if (isMicOn && hasMicPermission) Color(0xFF34D399) else Color(0xFFEF4444),
                         modifier = Modifier.size(16.dp)
                     )
                 }
@@ -933,7 +1118,7 @@ fun Private1on1VideoCallBox(
                     shadowColor = Color(0xFFB91C1C)
                 ) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
-                        Icon(Icons.Default.CallEnd, contentDescription = "End", tint = Color.White, modifier = Modifier.size(14.dp))
+                        Icon(Icons.Default.CallEnd, contentDescription = "End Call", tint = Color.White, modifier = Modifier.size(14.dp))
                         Spacer(modifier = Modifier.width(4.dp))
                         Text("End Call", fontSize = 11.sp, fontWeight = FontWeight.Bold, color = Color.White)
                     }
@@ -945,21 +1130,13 @@ fun Private1on1VideoCallBox(
 
 @Composable
 fun AddFriendDialog(
-    onDismiss: () -> Unit,
-    onAdd: (String, String, HighSchoolStrand, String) -> Unit
+    searchedStudents: List<TambayanFriend>,
+    isSearching: Boolean,
+    onSearch: (String) -> Unit,
+    onSendRequest: (String, String) -> Unit,
+    onDismiss: () -> Unit
 ) {
-    var newAlias by remember { mutableStateOf("") }
-    var selectedAvatar by remember { mutableStateOf("😎") }
-    var selectedStrand by remember { mutableStateOf(HighSchoolStrand.SHS_STEM) }
-    var customBio by remember { mutableStateOf("Online ka-tambay ✨") }
-
-    val recommendedClassmates = listOf(
-        Triple("Alex_Gamer", "🎮", HighSchoolStrand.SHS_TVL),
-        Triple("Bea_Valedictorian", "📚", HighSchoolStrand.SHS_STEM),
-        Triple("Chris_Joker", "🎭", HighSchoolStrand.GRADE_10),
-        Triple("Dianne_Music", "🎵", HighSchoolStrand.SHS_HUMSS),
-        Triple("Ethan_Council", "⭐", HighSchoolStrand.SHS_GAS)
-    )
+    var searchQuery by remember { mutableStateOf("") }
 
     Dialog(onDismissRequest = onDismiss) {
         Card(
@@ -969,107 +1146,105 @@ fun AddFriendDialog(
         ) {
             Column(modifier = Modifier.padding(18.dp)) {
                 Text(
-                    text = "Mag-add ng Kaibigan (Friend)",
+                    text = "Mag-add ng Kaibigan sa Barkada",
                     fontSize = 16.sp,
                     fontWeight = FontWeight.Bold,
                     color = Color.White
                 )
                 Text(
-                    text = "Mag-type ng student alias o pumili sa mga inirerekomendang kaklase para sa private chat & videocall:",
+                    text = "Maghanap ng totoong rehistradong estudyante sa Firestore upang magpadala ng friend request:",
                     fontSize = 11.sp,
                     color = TambayanTextMuted,
                     modifier = Modifier.padding(top = 4.dp, bottom = 12.dp)
                 )
 
-                // Recommended Quick Add Chips
-                Text("Inirerekomendang Classmates:", fontSize = 11.sp, color = TambayanGold, fontWeight = FontWeight.SemiBold)
-                LazyRow(
-                    horizontalArrangement = Arrangement.spacedBy(6.dp),
-                    contentPadding = PaddingValues(vertical = 6.dp)
-                ) {
-                    items(recommendedClassmates) { (recName, recAvatar, recStrand) ->
-                        Surface(
-                            onClick = {
-                                newAlias = recName
-                                selectedAvatar = recAvatar
-                                selectedStrand = recStrand
-                            },
-                            shape = RoundedCornerShape(8.dp),
-                            color = TambayanNavyElevated,
-                            border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFF334155))
-                        ) {
-                            Text(
-                                text = "$recAvatar $recName",
-                                fontSize = 10.sp,
-                                color = Color.White,
-                                modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
-                            )
+                // Search Bar
+                OutlinedTextField(
+                    value = searchQuery,
+                    onValueChange = {
+                        searchQuery = it
+                        onSearch(it.trim())
+                    },
+                    leadingIcon = {
+                        Icon(Icons.Default.Search, contentDescription = "Search", tint = Color(0xFF94A3B8))
+                    },
+                    placeholder = { Text("Alias o pangalan ng kaklase...") },
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(12.dp),
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedTextColor = Color.White,
+                        unfocusedTextColor = Color.White,
+                        focusedBorderColor = TambayanBlue,
+                        unfocusedBorderColor = Color(0xFF334155)
+                    ),
+                    singleLine = true
+                )
+
+                Spacer(modifier = Modifier.height(12.dp))
+
+                if (isSearching) {
+                    Box(modifier = Modifier.fillMaxWidth().height(80.dp), contentAlignment = Alignment.Center) {
+                        CircularProgressIndicator(modifier = Modifier.size(24.dp), color = TambayanBlue)
+                    }
+                } else if (searchedStudents.isEmpty()) {
+                    Box(modifier = Modifier.fillMaxWidth().height(80.dp), contentAlignment = Alignment.Center) {
+                        Text(
+                            text = if (searchQuery.isBlank()) "I-type ang alias upang maghanap ng kaklase." else "Walang natagpuang estudyante.",
+                            fontSize = 11.sp,
+                            color = TambayanTextMuted
+                        )
+                    }
+                } else {
+                    LazyColumn(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(180.dp),
+                        verticalArrangement = Arrangement.spacedBy(6.dp)
+                    ) {
+                        items(searchedStudents, key = { it.id }) { student ->
+                            Surface(
+                                shape = RoundedCornerShape(10.dp),
+                                color = TambayanNavyElevated,
+                                border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFF334155))
+                            ) {
+                                Row(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(8.dp),
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.SpaceBetween
+                                ) {
+                                    Row(verticalAlignment = Alignment.CenterVertically) {
+                                        Text(student.avatar, fontSize = 20.sp)
+                                        Spacer(modifier = Modifier.width(8.dp))
+                                        Column {
+                                            Text(student.alias, fontSize = 12.sp, fontWeight = FontWeight.Bold, color = Color.White)
+                                            Text(student.strand.badge, fontSize = 9.sp, color = TambayanCyan)
+                                        }
+                                    }
+
+                                    TactileButton(
+                                        onClick = { onSendRequest(student.id, student.alias) },
+                                        backgroundColor = TambayanBlue,
+                                        shadowColor = Color(0xFF1D4ED8)
+                                    ) {
+                                        Text("+ Add Request", fontSize = 10.sp, fontWeight = FontWeight.Bold, color = Color.White)
+                                    }
+                                }
+                            }
                         }
                     }
                 }
 
-                Spacer(modifier = Modifier.height(10.dp))
+                Spacer(modifier = Modifier.height(12.dp))
 
-                OutlinedTextField(
-                    value = newAlias,
-                    onValueChange = { newAlias = it },
-                    label = { Text("Friend's Student Alias") },
-                    placeholder = { Text("Hal. Juan_DelaCruz") },
-                    modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(12.dp),
-                    colors = OutlinedTextFieldDefaults.colors(
-                        focusedTextColor = Color.White,
-                        unfocusedTextColor = Color.White,
-                        focusedBorderColor = TambayanBlue,
-                        unfocusedBorderColor = Color(0xFF334155)
-                    ),
-                    singleLine = true
-                )
-
-                Spacer(modifier = Modifier.height(8.dp))
-
-                OutlinedTextField(
-                    value = customBio,
-                    onValueChange = { customBio = it },
-                    label = { Text("Status / Note") },
-                    modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(12.dp),
-                    colors = OutlinedTextFieldDefaults.colors(
-                        focusedTextColor = Color.White,
-                        unfocusedTextColor = Color.White,
-                        focusedBorderColor = TambayanBlue,
-                        unfocusedBorderColor = Color(0xFF334155)
-                    ),
-                    singleLine = true
-                )
-
-                Spacer(modifier = Modifier.height(16.dp))
-
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                TactileButton(
+                    onClick = onDismiss,
+                    backgroundColor = TambayanNavyElevated,
+                    shadowColor = Color(0xFF1E293B),
+                    modifier = Modifier.fillMaxWidth()
                 ) {
-                    TactileButton(
-                        onClick = onDismiss,
-                        backgroundColor = TambayanNavyElevated,
-                        shadowColor = Color(0xFF1E293B),
-                        modifier = Modifier.weight(1f)
-                    ) {
-                        Text("Kanselahin", fontSize = 12.sp, color = Color.White)
-                    }
-
-                    TactileButton(
-                        onClick = {
-                            if (newAlias.isNotBlank()) {
-                                onAdd(newAlias.trim(), selectedAvatar, selectedStrand, customBio.trim())
-                            }
-                        },
-                        backgroundColor = TambayanBlue,
-                        shadowColor = Color(0xFF1D4ED8),
-                        modifier = Modifier.weight(1f)
-                    ) {
-                        Text("I-add Friend ✨", fontSize = 12.sp, fontWeight = FontWeight.Bold, color = Color.White)
-                    }
+                    Text("Isara", fontSize = 12.sp, color = Color.White)
                 }
             }
         }

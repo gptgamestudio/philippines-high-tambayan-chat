@@ -79,7 +79,7 @@ fun AdBannerView(
                     modifier = Modifier.size(11.dp)
                 )
                 Text(
-                    text = "ADVERTISEMENT • Google AdMob Test Banner • Fixed Sponsor",
+                    text = "ADVERTISEMENT • Sponsor",
                     fontSize = 9.sp,
                     fontWeight = FontWeight.Bold,
                     color = TambayanTextMuted
