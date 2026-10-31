@@ -17,6 +17,8 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
+import android.content.Intent
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
@@ -28,6 +30,7 @@ import androidx.compose.material.icons.filled.DeleteOutline
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.Flag
+import androidx.compose.material.icons.filled.Share
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -79,6 +82,7 @@ fun LoungeScreen(
     onDeletePost: (postId: String) -> Unit,
     onBackClick: () -> Unit
 ) {
+    val context = LocalContext.current
     var selectedCategory by remember { mutableStateOf("Lahat") }
     var showCreateDialog by remember { mutableStateOf(false) }
     var postToReport by remember { mutableStateOf<LoungePost?>(null) }
@@ -338,6 +342,27 @@ fun LoungeScreen(
                                         fontSize = 12.sp,
                                         fontWeight = FontWeight.Medium
                                     )
+
+                                    Spacer(modifier = Modifier.width(10.dp))
+
+                                    IconButton(
+                                        onClick = {
+                                            val shareIntent = Intent(Intent.ACTION_SEND).apply {
+                                                type = "text/plain"
+                                                putExtra(Intent.EXTRA_SUBJECT, post.title)
+                                                putExtra(Intent.EXTRA_TEXT, "📚 ${post.title}\n\nMula kay ${post.authorName} (${post.categoryTag}) sa Philippines High Tambayan:\n\n\"${post.content}\"\n\nhttps://ais-pre-ibpnq7ytehnxsfqxtnjrzt-41500935643.asia-southeast1.run.app")
+                                            }
+                                            context.startActivity(Intent.createChooser(shareIntent, "I-share ang Post"))
+                                        },
+                                        modifier = Modifier.size(36.dp)
+                                    ) {
+                                        Icon(
+                                            imageVector = Icons.Default.Share,
+                                            contentDescription = "I-share ang Post",
+                                            tint = LightBlue,
+                                            modifier = Modifier.size(18.dp)
+                                        )
+                                    }
                                 }
 
                                 TextButton(

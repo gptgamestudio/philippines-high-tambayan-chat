@@ -1103,7 +1103,37 @@ fun ChatRoomScreen(
                         }
                     )
 
-                    // Option 2: Report Message
+                    // Option 2: Share Message
+                    MessageOptionRow(
+                        icon = Icons.Default.Share,
+                        iconTint = TambayanCyan,
+                        title = "I-share ang Mensahe (Share to Apps)",
+                        onClick = {
+                            val shareIntent = Intent(Intent.ACTION_SEND).apply {
+                                type = "text/plain"
+                                putExtra(Intent.EXTRA_SUBJECT, "Mensahe mula sa ${currentRoom.title}")
+                                putExtra(Intent.EXTRA_TEXT, "💬 Mula kay ${msg.senderName} sa ${currentRoom.title} (Philippines High Tambayan):\n\n\"${msg.messageText}\"\n\nhttps://ais-pre-ibpnq7ytehnxsfqxtnjrzt-41500935643.asia-southeast1.run.app")
+                            }
+                            context.startActivity(Intent.createChooser(shareIntent, "I-share ang Mensahe"))
+                            selectedMessageForAction = null
+                        }
+                    )
+
+                    // Option 3: Save / Copy to Clipboard
+                    MessageOptionRow(
+                        icon = Icons.Default.Bookmark,
+                        iconTint = TambayanGold,
+                        title = "I-save at Kopyahin (Save to Clipboard)",
+                        onClick = {
+                            val clipboard = context.getSystemService(android.content.Context.CLIPBOARD_SERVICE) as? android.content.ClipboardManager
+                            val clip = android.content.ClipData.newPlainText("Tambayan Message", msg.messageText)
+                            clipboard?.setPrimaryClip(clip)
+                            Toast.makeText(context, "💾 Na-save at nakopya ang mensahe sa clipboard!", Toast.LENGTH_SHORT).show()
+                            selectedMessageForAction = null
+                        }
+                    )
+
+                    // Option 4: Report Message
                     MessageOptionRow(
                         icon = Icons.Default.Flag,
                         iconTint = TambayanGold,
@@ -1114,7 +1144,7 @@ fun ChatRoomScreen(
                         }
                     )
 
-                    // Option 3: Block User (if not self)
+                    // Option 5: Block User (if not self)
                     if (!msg.isUser) {
                         MessageOptionRow(
                             icon = Icons.Default.Block,
@@ -1127,7 +1157,7 @@ fun ChatRoomScreen(
                         )
                     }
 
-                    // Option 4: Delete Message (if self)
+                    // Option 6: Delete Message (if self)
                     if (msg.isUser) {
                         MessageOptionRow(
                             icon = Icons.Default.Delete,

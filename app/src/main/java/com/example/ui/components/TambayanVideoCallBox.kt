@@ -1,5 +1,6 @@
 package com.example.ui.components
 
+import android.content.Intent
 import android.widget.Toast
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.RepeatMode
@@ -502,7 +503,16 @@ fun TambayanVideoCallBox(
                         .background(Color(0xFF2563EB))
                         .clickable {
                             onInviteClick()
-                            Toast.makeText(context, "Na-kopya na ang link ng room para i-share sa mga kaibigan!", Toast.LENGTH_SHORT).show()
+                            try {
+                                val shareIntent = Intent(Intent.ACTION_SEND).apply {
+                                    type = "text/plain"
+                                    putExtra(Intent.EXTRA_SUBJECT, "Sali ka sa ${currentRoom.title}!")
+                                    putExtra(Intent.EXTRA_TEXT, "Tara tambay tayo sa ${currentRoom.title} sa Philippines High Tambayan!\n\nLink: https://ais-pre-ibpnq7ytehnxsfqxtnjrzt-41500935643.asia-southeast1.run.app")
+                                }
+                                context.startActivity(Intent.createChooser(shareIntent, "I-invite ang mga Barkada"))
+                            } catch (e: Exception) {
+                                Toast.makeText(context, "Na-kopya na ang link ng room para i-share sa mga kaibigan!", Toast.LENGTH_SHORT).show()
+                            }
                         }
                         .padding(horizontal = 12.dp, vertical = 8.dp)
                         .testTag("btn_invite_share"),
